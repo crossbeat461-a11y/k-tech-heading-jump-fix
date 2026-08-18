@@ -17,7 +17,7 @@ export const OUTLINE_SELECTORS = {
 
 export class OutlineHook {
   private handler: ((event: MouseEvent) => void) | null = null;
-  private pendingTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingTimer: ReturnType<typeof window.setTimeout> | null = null;
 
   constructor(
     private app: App,
@@ -41,7 +41,7 @@ export class OutlineHook {
 
   private clearPending(): void {
     if (this.pendingTimer !== null) {
-      clearTimeout(this.pendingTimer);
+      window.clearTimeout(this.pendingTimer);
       this.pendingTimer = null;
     }
   }
@@ -60,7 +60,7 @@ export class OutlineHook {
     if (!treeItemSelf) return;
 
     const treeItem = treeItemSelf.closest(OUTLINE_SELECTORS.treeItem);
-    if (!treeItem || !(treeItem instanceof HTMLElement)) return;
+    if (!treeItem || !Element.instanceOf(HTMLElement, treeItem)) return;
 
     const headingText = getOutlineItemText(treeItem);
     if (!headingText) return;
@@ -80,7 +80,7 @@ export class OutlineHook {
     if (!markdownView?.editor) return;
 
     this.clearPending();
-    this.pendingTimer = setTimeout(() => {
+    this.pendingTimer = window.setTimeout(() => {
       this.pendingTimer = null;
       void this.performJump(file, headingText, level, occurrenceIndex);
     }, settings.retryDelayMs);

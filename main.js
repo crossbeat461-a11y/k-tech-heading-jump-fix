@@ -83,10 +83,79 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
     super(app, plugin);
     this.plugin = plugin;
   }
+  getSettingDefinitions() {
+    return [
+      {
+        type: "group",
+        heading: "Heading Jump Fix",
+        items: [
+          {
+            name: "Enable plugin",
+            desc: "Master switch for scroll correction.",
+            control: {
+              type: "toggle",
+              key: "enabled",
+              defaultValue: DEFAULT_SETTINGS.enabled
+            }
+          },
+          {
+            name: "Outline click fix",
+            desc: "Retry scroll after clicking a heading in the Outline sidebar.",
+            control: {
+              type: "toggle",
+              key: "outlineFix",
+              defaultValue: DEFAULT_SETTINGS.outlineFix
+            }
+          },
+          {
+            name: "Retry delay (ms)",
+            desc: "Wait before correcting scroll (default 250).",
+            control: {
+              type: "number",
+              key: "retryDelayMs",
+              min: 0,
+              defaultValue: DEFAULT_SETTINGS.retryDelayMs
+            }
+          },
+          {
+            name: "Retry count",
+            desc: "Number of correction passes after outline click (default 1).",
+            control: {
+              type: "number",
+              key: "retryCount",
+              min: 0,
+              defaultValue: DEFAULT_SETTINGS.retryCount
+            }
+          }
+        ]
+      },
+      {
+        type: "group",
+        heading: "Support",
+        items: [
+          {
+            name: "Buy Me a Coffee",
+            desc: "Support K-Tech Studio development.",
+            action: () => {
+              window.open(FUNDING_URL, "_blank");
+            }
+          }
+        ]
+      }
+    ];
+  }
+  getControlValue(key) {
+    return this.plugin.settings[key];
+  }
+  async setControlValue(key, value) {
+    this.plugin.settings[key] = value;
+    await this.plugin.saveSettings();
+  }
+  /** Fallback for Obsidian versions older than 1.13.0. */
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Heading Jump Fix" });
+    new import_obsidian2.Setting(containerEl).setName("Heading Jump Fix").setHeading();
     new import_obsidian2.Setting(containerEl).setName("Enable plugin").setDesc("Master switch for scroll correction.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.enabled).onChange(async (value) => {
         this.plugin.settings.enabled = value;
@@ -115,7 +184,7 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     );
-    containerEl.createEl("h3", { text: "Support" });
+    new import_obsidian2.Setting(containerEl).setName("Support").setHeading();
     new import_obsidian2.Setting(containerEl).setName("Buy Me a Coffee").setDesc("Support K-Tech Studio development.").addButton(
       (button) => button.setButtonText("Buy Me a Coffee").onClick(() => {
         window.open(FUNDING_URL, "_blank");
@@ -157,9 +226,7 @@ function findHeadingAtLine(app, file, line) {
   return { line: best.position.start.line, heading: best };
 }
 function countPriorMatchingHeadings(item, headingText, level, outlineRoot) {
-  const items = Array.from(
-    outlineRoot.querySelectorAll(".tree-item")
-  );
+  const items = Array.from(outlineRoot.querySelectorAll(".tree-item"));
   const index = items.indexOf(item);
   if (index < 0) return 0;
   let count = 0;
@@ -208,8 +275,8 @@ function scrollLineIntoView(editor, line) {
 }
 function doubleRafScroll(editor, line) {
   return new Promise((resolve) => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
         scrollLineIntoView(editor, line);
         resolve();
       });
@@ -217,7 +284,7 @@ function doubleRafScroll(editor, line) {
   });
 }
 function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 async function reliableJump(editor, resolved, options) {
   if (!editor) {
@@ -268,7 +335,7 @@ var OutlineHook = class {
   }
   clearPending() {
     if (this.pendingTimer !== null) {
-      clearTimeout(this.pendingTimer);
+      window.clearTimeout(this.pendingTimer);
       this.pendingTimer = null;
     }
   }
@@ -282,7 +349,7 @@ var OutlineHook = class {
     const treeItemSelf = target.closest(OUTLINE_SELECTORS.treeItemSelf);
     if (!treeItemSelf) return;
     const treeItem = treeItemSelf.closest(OUTLINE_SELECTORS.treeItem);
-    if (!treeItem || !(treeItem instanceof HTMLElement)) return;
+    if (!treeItem || !Element.instanceOf(HTMLElement, treeItem)) return;
     const headingText = getOutlineItemText(treeItem);
     if (!headingText) return;
     const level = getOutlineItemLevel(treeItem);
@@ -297,7 +364,7 @@ var OutlineHook = class {
     const markdownView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
     if (!(markdownView == null ? void 0 : markdownView.editor)) return;
     this.clearPending();
-    this.pendingTimer = setTimeout(() => {
+    this.pendingTimer = window.setTimeout(() => {
       this.pendingTimer = null;
       void this.performJump(file, headingText, level, occurrenceIndex);
     }, settings.retryDelayMs);

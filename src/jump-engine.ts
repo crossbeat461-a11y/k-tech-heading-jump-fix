@@ -21,8 +21,8 @@ function scrollLineIntoView(editor: Editor, line: number): void {
 
 function doubleRafScroll(editor: Editor, line: number): Promise<void> {
   return new Promise((resolve) => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
         scrollLineIntoView(editor, line);
         resolve();
       });
@@ -31,7 +31,7 @@ function doubleRafScroll(editor: Editor, line: number): Promise<void> {
 }
 
 function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 export async function reliableJump(

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1 — 2026-08-19
+
+### Fixed
+
+- Obsidian 1.13+ declarative settings (`getSettingDefinitions`) for global settings search
+- Settings headings use `Setting.setHeading()` for consistent UI
+- Popout-window-safe timers and `Element.instanceOf()` checks
+- Replace deprecated `builtin-modules` with `node:module` in esbuild config
+
 ## 0.1.0 — 2026-08-19
 
 Phase 1 (MVP): outline click auto-retry.
