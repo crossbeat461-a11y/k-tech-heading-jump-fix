@@ -86,48 +86,42 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
   getSettingDefinitions() {
     return [
       {
-        type: "group",
-        heading: "General",
-        items: [
-          {
-            name: "Enable plugin",
-            desc: "Master switch for scroll correction.",
-            control: {
-              type: "toggle",
-              key: "enabled",
-              defaultValue: DEFAULT_SETTINGS.enabled
-            }
-          },
-          {
-            name: "Outline click fix",
-            desc: "Retry scroll after clicking a heading in the Outline sidebar.",
-            control: {
-              type: "toggle",
-              key: "outlineFix",
-              defaultValue: DEFAULT_SETTINGS.outlineFix
-            }
-          },
-          {
-            name: "Retry delay (ms)",
-            desc: "Wait before correcting scroll (default 250).",
-            control: {
-              type: "number",
-              key: "retryDelayMs",
-              min: 0,
-              defaultValue: DEFAULT_SETTINGS.retryDelayMs
-            }
-          },
-          {
-            name: "Retry count",
-            desc: "Number of correction passes after outline click (default 1).",
-            control: {
-              type: "number",
-              key: "retryCount",
-              min: 0,
-              defaultValue: DEFAULT_SETTINGS.retryCount
-            }
-          }
-        ]
+        name: "Enable plugin",
+        desc: "Master switch for scroll correction.",
+        control: {
+          type: "toggle",
+          key: "enabled",
+          defaultValue: DEFAULT_SETTINGS.enabled
+        }
+      },
+      {
+        name: "Outline click fix",
+        desc: "Retry scroll after clicking a heading in the Outline sidebar.",
+        control: {
+          type: "toggle",
+          key: "outlineFix",
+          defaultValue: DEFAULT_SETTINGS.outlineFix
+        }
+      },
+      {
+        name: "Retry delay (ms)",
+        desc: "Wait before correcting scroll (default 250).",
+        control: {
+          type: "number",
+          key: "retryDelayMs",
+          min: 0,
+          defaultValue: DEFAULT_SETTINGS.retryDelayMs
+        }
+      },
+      {
+        name: "Retry count",
+        desc: "Number of correction passes after outline click (default 1).",
+        control: {
+          type: "number",
+          key: "retryCount",
+          min: 0,
+          defaultValue: DEFAULT_SETTINGS.retryCount
+        }
       },
       {
         type: "group",
@@ -155,7 +149,6 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian2.Setting(containerEl).setName("General").setHeading();
     new import_obsidian2.Setting(containerEl).setName("Enable plugin").setDesc("Master switch for scroll correction.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.enabled).onChange(async (value) => {
         this.plugin.settings.enabled = value;
