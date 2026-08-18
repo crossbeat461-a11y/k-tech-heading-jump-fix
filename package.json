@@ -1,6 +1,6 @@
 {
   "name": "k-tech-heading-jump-fix",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Auto-correct scroll position after outline or heading clicks.",
   "scripts": {
@@ -9,9 +9,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "builtin-modules": "^4.0.0",
     "esbuild": "^0.24.0",
-    "obsidian": "1.7.2",
+    "obsidian": "^1.13.1",
     "typescript": "^5.7.0"
   }
 }

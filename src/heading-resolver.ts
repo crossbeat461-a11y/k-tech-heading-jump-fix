@@ -65,9 +65,7 @@ export function countPriorMatchingHeadings(
   level: number,
   outlineRoot: Element
 ): number {
-  const items = Array.from(
-    outlineRoot.querySelectorAll(".tree-item")
-  ) as HTMLElement[];
+  const items = Array.from(outlineRoot.querySelectorAll(".tree-item"));
   const index = items.indexOf(item);
   if (index < 0) return 0;
 
