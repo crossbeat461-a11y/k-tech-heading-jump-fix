@@ -60,7 +60,7 @@ export class OutlineHook {
     if (!treeItemSelf) return;
 
     const treeItem = treeItemSelf.closest(OUTLINE_SELECTORS.treeItem);
-    if (!treeItem || !Element.instanceOf(HTMLElement, treeItem)) return;
+    if (!treeItem?.instanceOf(HTMLElement)) return;
 
     const headingText = getOutlineItemText(treeItem);
     if (!headingText) return;
