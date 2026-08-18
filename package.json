@@ -1,6 +1,6 @@
 {
   "name": "k-tech-heading-jump-fix",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Auto-correct scroll position after outline or heading clicks.",
   "scripts": {

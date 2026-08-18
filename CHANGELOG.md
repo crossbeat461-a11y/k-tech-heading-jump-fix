@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 — 2026-08-19
+
+### Fixed
+
+- Remove redundant "General" settings heading (review feedback)
+
 ## 0.1.2 — 2026-08-19
 
 ### Fixed
