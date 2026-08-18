@@ -35,7 +35,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
     return [
       {
         type: "group",
-        heading: "Heading Jump Fix",
+        heading: "General",
         items: [
           {
             name: "Enable plugin",
@@ -108,7 +108,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    new Setting(containerEl).setName("Heading Jump Fix").setHeading();
+    new Setting(containerEl).setName("General").setHeading();
 
     new Setting(containerEl)
       .setName("Enable plugin")

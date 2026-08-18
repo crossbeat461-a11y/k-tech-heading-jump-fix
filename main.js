@@ -87,7 +87,7 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
     return [
       {
         type: "group",
-        heading: "Heading Jump Fix",
+        heading: "General",
         items: [
           {
             name: "Enable plugin",
@@ -155,7 +155,7 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian2.Setting(containerEl).setName("Heading Jump Fix").setHeading();
+    new import_obsidian2.Setting(containerEl).setName("General").setHeading();
     new import_obsidian2.Setting(containerEl).setName("Enable plugin").setDesc("Master switch for scroll correction.").addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.enabled).onChange(async (value) => {
         this.plugin.settings.enabled = value;
@@ -349,7 +349,7 @@ var OutlineHook = class {
     const treeItemSelf = target.closest(OUTLINE_SELECTORS.treeItemSelf);
     if (!treeItemSelf) return;
     const treeItem = treeItemSelf.closest(OUTLINE_SELECTORS.treeItem);
-    if (!treeItem || !Element.instanceOf(HTMLElement, treeItem)) return;
+    if (!(treeItem == null ? void 0 : treeItem.instanceOf(HTMLElement))) return;
     const headingText = getOutlineItemText(treeItem);
     if (!headingText) return;
     const level = getOutlineItemLevel(treeItem);

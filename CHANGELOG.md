@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 — 2026-08-19
+
+### Fixed
+
+- Remove plugin name from settings section headings (review feedback)
+- Use instance method `treeItem.instanceOf(HTMLElement)` for cross-window checks
+
 ## 0.1.1 — 2026-08-19
 
 ### Fixed
