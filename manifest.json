@@ -1,0 +1,11 @@
+{
+  "id": "k-tech-heading-jump-fix",
+  "name": "Heading Jump Fix",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Auto-correct scroll position after outline or heading clicks.",
+  "author": "K-Tech Studio",
+  "authorUrl": "https://github.com/crossbeat461-a11y",
+  "fundingUrl": "https://buymeacoffee.com/k_tech_studio",
+  "isDesktopOnly": false
+}

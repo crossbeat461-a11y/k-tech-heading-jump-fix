@@ -1,0 +1,27 @@
+---
+description: Heading Jump Fix — Obsidian plugin core rules
+globs:
+  - "**/*"
+---
+
+# Heading Jump Fix — コアルール
+
+正本: `HANDOFF.md` · `README.md` · `manifest.json`
+
+## スコープ
+
+- Phase 1 (v0.1): アウトラインクリック後の遅延リトライ + scroll 補正のみ
+- Phase 2+: 本文リンク、位置検証、テーマ CSS — 計画書参照、勝手に広げない
+
+## コーディング
+
+- TypeScript + esbuild。`main.js` はビルド成果物としてコミット
+- Obsidian API 正本: `metadataCache.getFileCache(file)?.headings`
+- Outline セレクタは `outline-hook.ts` の定数に集約
+- ネットワークリクエスト禁止（community 審査）
+- `manifest.json` の `description` に Obsidian を含めない
+
+## リリース
+
+- TableCSV と同型: tag push → GitHub Actions → main.js / manifest.json / styles.css
+- コミット・push はユーザー明示指示時のみ
