@@ -16,6 +16,8 @@ Paste these values in the developer dashboard.
 Auto-correct scroll position after outline or heading clicks so one click is enough.
 ```
 
+The **Overview** tab on the plugin page is the GitHub `README.md` (not this listing block). After changing the README, wait for the directory to refresh, or re-save the listing in the developer dashboard.
+
 ## Longer description (if available)
 
 ```

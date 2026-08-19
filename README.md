@@ -32,15 +32,14 @@ In Live Preview, clicking a heading in the Outline sometimes moves the cursor bu
 
 - General UI sluggishness (Electron/GPU, too many plugins)
 - Dropbox or sync I/O delay
-- In-note `[[wikilink#heading]]` clicks (planned Phase 2)
+- In-note `[[wikilink#heading]]` clicks (planned for a future update)
 - Reading view–only navigation
 
 ### How to use
 
-1. Install manually: copy `main.js`, `manifest.json`, `styles.css` to  
-   `YourVault/.obsidian/plugins/k-tech-heading-jump-fix/`
-2. Enable **Heading Jump Fix** under Community plugins
-3. Open a long note, use the core **Outline** pane, click any heading once
+1. Install **Heading Jump Fix** from Community plugins and enable it
+2. Open a long note
+3. Use the core **Outline** pane and click any heading once
 
 **Settings** (plugin options):
 
@@ -53,18 +52,13 @@ In Live Preview, clicking a heading in the Outline sometimes moves the cursor bu
 
 **Command palette:** `Jump to heading at cursor line reliably` — scrolls to the heading that contains the current cursor line.
 
-### Development
-
-```bash
-npm install
-npm run build
-```
-
-See [HANDOFF.md](./HANDOFF.md) for architecture and Phase 2 plans.
-
 ### Author
 
-K-Tech Studio — [Buy Me a Coffee](https://buymeacoffee.com/k_tech_studio)
+K-Tech Studio
+
+### Support
+
+[Buy Me a Coffee](https://buymeacoffee.com/k_tech_studio)
 
 ### Disclaimer (no warranty)
 
@@ -93,13 +87,33 @@ Live Preview でアウトラインの見出しをクリックしても、カー�
 
 - 全体の UI ラグ
 - Dropbox 同期遅延
-- 本文内 wikilink クリック（Phase 2 予定）
+- 本文内 wikilink クリック（今後の更新で対応予定）
+- リーディングビューのみの移動
 
 ### 使い方
 
-1. `YourVault/.obsidian/plugins/k-tech-heading-jump-fix/` に3ファイルを配置
-2. コミュニティプラグインで有効化
-3. 長いノートでアウトラインから見出しを1回クリック
+1. コミュニティプラグインから **Heading Jump Fix** を入れて有効にする
+2. 長いノートを開く
+3. コアの **アウトライン** から見出しを1回クリックする
+
+**設定**（プラグイン設定）:
+
+| 設定 | 初期値 | 説明 |
+|------|--------|------|
+| プラグインを有効化 | ON | 全体のスイッチ |
+| アウトラインクリック補正 | ON | アウトラインクリック後にスクロールを再試行 |
+| リトライ遅延 (ms) | 250 | 補正までの待ち時間 |
+| リトライ回数 | 1 | 追加のスクロール回数 |
+
+**コマンドパレット:** `Jump to heading at cursor line reliably` — カーソル行を含む見出しまでスクロールします。
+
+### 作者
+
+K-Tech Studio
+
+### サポート
+
+[Buy Me a Coffee](https://buymeacoffee.com/k_tech_studio)
 
 ### 免責（無保証）
 
