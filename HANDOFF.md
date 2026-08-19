@@ -9,8 +9,8 @@
 | ID | `k-tech-heading-jump-fix` |
 | Name | Heading Jump Fix |
 | Author | K-Tech Studio |
-| Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` (not pushed yet) |
-| Version | 0.1.0 (Phase 1) |
+| Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` |
+| Version | 0.3.0 (Phase 3) |
 
 ## README (community listing)
 
@@ -39,11 +39,14 @@ Enable in Settings → Community plugins → Heading Jump Fix.
 ## Architecture
 
 ```
-src/main.ts              Plugin entry, settings, command
+src/main.ts              Plugin entry, settings, command, theme CSS class
 src/settings.ts          Settings + tab UI
 src/heading-resolver.ts  metadataCache → line; outline DOM helpers
 src/jump-engine.ts       setCursor + scrollIntoView + rAF retry
 src/outline-hook.ts      Outline click capture (Phase 1 scope)
+src/theme-scroll.ts      Apply instant-scroll body class (popout-safe)
+src/debug.ts             Console debug log (opt-in)
+styles.css               Override theme scroll-behavior: smooth
 ```
 
 ## Phase roadmap
@@ -52,7 +55,7 @@ src/outline-hook.ts      Outline click capture (Phase 1 scope)
 |---|---|---|---|
 | 1 | 0.1.0 | Outline auto-retry MVP | **Done** |
 | 2 | 0.2.0 | Viewport verify, wikilink hook, link pane | Planned |
-| 3 | 0.3.0 | Theme scroll-behavior CSS, debug log | Planned |
+| 3 | 0.3.0 | Theme scroll-behavior CSS, debug log | **Done** |
 | 4 | 1.0.0 | Stabilize, community listing decision | Planned |
 
 ## Phase 2 entry points
@@ -72,9 +75,11 @@ Checklist (manual in Obsidian):
 - [ ] Duplicate heading (second "Duplicate name")
 - [ ] Plugin disabled → no hook
 - [ ] Coexists with TableCSV, Tasks, Dataview
+- [ ] Theme with `scroll-behavior: smooth` still lands on the heading (override ON)
+- [ ] Debug log ON → `[Heading Jump Fix]` lines in developer console
 
 ## Release
 
-Same as TableCSV: tag `0.1.0` → `.github/workflows/release.yml` → GitHub Release with attestation.
+Same as TableCSV: tag `0.3.0` → `.github/workflows/release.yml` → GitHub Release with attestation.
 
 Do not include "Obsidian" in `manifest.json` description.

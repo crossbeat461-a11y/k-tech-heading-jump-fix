@@ -12,6 +12,8 @@ export interface HeadingJumpFixSettings {
   outlineFix: boolean;
   retryDelayMs: number;
   retryCount: number;
+  overrideThemeScroll: boolean;
+  debugLog: boolean;
 }
 
 export type HeadingJumpFixSettingKey = keyof HeadingJumpFixSettings;
@@ -21,6 +23,8 @@ export const DEFAULT_SETTINGS: HeadingJumpFixSettings = {
   outlineFix: true,
   retryDelayMs: 250,
   retryCount: 1,
+  overrideThemeScroll: true,
+  debugLog: false,
 };
 
 export class HeadingJumpFixSettingTab extends PluginSettingTab {
@@ -69,6 +73,24 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
           key: "retryCount",
           min: 0,
           defaultValue: DEFAULT_SETTINGS.retryCount,
+        },
+      },
+      {
+        name: "Override theme scroll-behavior",
+        desc: "Force instant editor scrolling so theme smooth-scroll does not miss the heading.",
+        control: {
+          type: "toggle",
+          key: "overrideThemeScroll",
+          defaultValue: DEFAULT_SETTINGS.overrideThemeScroll,
+        },
+      },
+      {
+        name: "Debug log",
+        desc: "Write jump details to the developer console (no network).",
+        control: {
+          type: "toggle",
+          key: "debugLog",
+          defaultValue: DEFAULT_SETTINGS.debugLog,
         },
       },
       {
@@ -152,6 +174,32 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
             const parsed = parseInt(value, 10);
             if (!Number.isFinite(parsed) || parsed < 0) return;
             this.plugin.settings.retryCount = parsed;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Override theme scroll-behavior")
+      .setDesc(
+        "Force instant editor scrolling so theme smooth-scroll does not miss the heading."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.overrideThemeScroll)
+          .onChange(async (value) => {
+            this.plugin.settings.overrideThemeScroll = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Debug log")
+      .setDesc("Write jump details to the developer console (no network).")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.debugLog)
+          .onChange(async (value) => {
+            this.plugin.settings.debugLog = value;
             await this.plugin.saveSettings();
           })
       );
