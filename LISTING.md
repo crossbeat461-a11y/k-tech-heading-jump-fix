@@ -23,7 +23,7 @@ The **Overview** tab on the plugin page is the GitHub `README.md` (not this list
 ```
 Heading Jump Fix helps when clicking a heading in the Outline sidebar moves the cursor but does not scroll the editor into view — especially on long notes or right after opening the app.
 
-After each outline click, the plugin waits briefly, then scrolls to the correct heading line using metadata from your vault. Duplicate headings are matched by order in the outline. Retry delay and retry count are configurable.
+After each outline click, the plugin waits briefly, then scrolls to the correct heading line using metadata from your vault. Duplicate headings are matched by order in the outline. Retry delay, retry count, theme scroll-behavior override, and an optional debug log are configurable.
 
 Fully offline — no network requests. Does not fix general UI lag or sync delay. Wikilink clicks in note body are planned for a future update.
 

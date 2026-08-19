@@ -76,7 +76,9 @@ var DEFAULT_SETTINGS = {
   enabled: true,
   outlineFix: true,
   retryDelayMs: 250,
-  retryCount: 1
+  retryCount: 1,
+  overrideThemeScroll: true,
+  debugLog: false
 };
 var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
   constructor(app, plugin) {
@@ -121,6 +123,24 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
           key: "retryCount",
           min: 0,
           defaultValue: DEFAULT_SETTINGS.retryCount
+        }
+      },
+      {
+        name: "Override theme scroll-behavior",
+        desc: "Force instant editor scrolling so theme smooth-scroll does not miss the heading.",
+        control: {
+          type: "toggle",
+          key: "overrideThemeScroll",
+          defaultValue: DEFAULT_SETTINGS.overrideThemeScroll
+        }
+      },
+      {
+        name: "Debug log",
+        desc: "Write jump details to the developer console (no network).",
+        control: {
+          type: "toggle",
+          key: "debugLog",
+          defaultValue: DEFAULT_SETTINGS.debugLog
         }
       },
       {
@@ -174,6 +194,20 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
         const parsed = parseInt(value, 10);
         if (!Number.isFinite(parsed) || parsed < 0) return;
         this.plugin.settings.retryCount = parsed;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian2.Setting(containerEl).setName("Override theme scroll-behavior").setDesc(
+      "Force instant editor scrolling so theme smooth-scroll does not miss the heading."
+    ).addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.overrideThemeScroll).onChange(async (value) => {
+        this.plugin.settings.overrideThemeScroll = value;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian2.Setting(containerEl).setName("Debug log").setDesc("Write jump details to the developer console (no network).").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.debugLog).onChange(async (value) => {
+        this.plugin.settings.debugLog = value;
         await this.plugin.saveSettings();
       })
     );
@@ -260,6 +294,17 @@ function getOutlineItemText(item) {
   return normalizeHeadingText((_a = inner == null ? void 0 : inner.textContent) != null ? _a : "");
 }
 
+// src/debug.ts
+var PREFIX = "[Heading Jump Fix]";
+function debugLog(enabled, message, extra) {
+  if (!enabled) return;
+  if (extra !== void 0) {
+    console.log(PREFIX, message, extra);
+  } else {
+    console.log(PREFIX, message);
+  }
+}
+
 // src/jump-engine.ts
 function scrollLineIntoView(editor, line) {
   const pos = { line, ch: 0 };
@@ -280,11 +325,26 @@ function delay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 async function reliableJump(editor, resolved, options) {
+  const log = !!options.debugLog;
   if (!editor) {
-    return { ok: false, line: -1, retries: 0, reason: "no-editor" };
+    const result2 = {
+      ok: false,
+      line: -1,
+      retries: 0,
+      reason: "no-editor"
+    };
+    debugLog(log, "jump failed", result2);
+    return result2;
   }
   if (!resolved) {
-    return { ok: false, line: -1, retries: 0, reason: "not-found" };
+    const result2 = {
+      ok: false,
+      line: -1,
+      retries: 0,
+      reason: "not-found"
+    };
+    debugLog(log, "jump failed", result2);
+    return result2;
   }
   const { line } = resolved;
   const passes = Math.max(1, options.retryCount + 1);
@@ -292,10 +352,22 @@ async function reliableJump(editor, resolved, options) {
     if (i > 0 && options.retryDelayMs > 0) {
       await delay(options.retryDelayMs);
     }
+    debugLog(log, "scroll pass", {
+      line,
+      heading: resolved.heading.heading,
+      pass: i + 1,
+      of: passes
+    });
     scrollLineIntoView(editor, line);
     await doubleRafScroll(editor, line);
   }
-  return { ok: true, line, retries: Math.max(0, passes - 1) };
+  const result = {
+    ok: true,
+    line,
+    retries: Math.max(0, passes - 1)
+  };
+  debugLog(log, "jump result", result);
+  return result;
 }
 
 // src/outline-hook.ts
@@ -357,6 +429,13 @@ var OutlineHook = class {
     const markdownView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
     if (!(markdownView == null ? void 0 : markdownView.editor)) return;
     this.clearPending();
+    debugLog(settings.debugLog, "outline click", {
+      headingText,
+      level,
+      occurrenceIndex,
+      file: file.path,
+      delayMs: settings.retryDelayMs
+    });
     this.pendingTimer = window.setTimeout(() => {
       this.pendingTimer = null;
       void this.performJump(file, headingText, level, occurrenceIndex);
@@ -375,7 +454,8 @@ var OutlineHook = class {
     });
     await reliableJump(editor, resolved, {
       retryCount: settings.retryCount,
-      retryDelayMs: settings.retryDelayMs
+      retryDelayMs: settings.retryDelayMs,
+      debugLog: settings.debugLog
     });
   }
 };
@@ -401,6 +481,22 @@ function toStorage(settings, lastSeenVersion) {
   return { settings, lastSeenVersion };
 }
 
+// src/theme-scroll.ts
+var INSTANT_SCROLL_BODY_CLASS = "heading-jump-fix-instant-scroll";
+function applyInstantScrollOverride(app, enabled) {
+  for (const doc of collectDocuments(app)) {
+    doc.body.classList.toggle(INSTANT_SCROLL_BODY_CLASS, enabled);
+  }
+}
+function collectDocuments(app) {
+  const docs = /* @__PURE__ */ new Set([document]);
+  app.workspace.iterateAllLeaves((leaf) => {
+    const win = leaf.view.containerEl.win;
+    if (win == null ? void 0 : win.document) docs.add(win.document);
+  });
+  return [...docs];
+}
+
 // src/main.ts
 var HeadingJumpFixPlugin = class extends import_obsidian4.Plugin {
   constructor() {
@@ -410,6 +506,12 @@ var HeadingJumpFixPlugin = class extends import_obsidian4.Plugin {
   }
   async onload() {
     await this.loadSettings();
+    this.applyThemeScrollOverride();
+    this.registerEvent(
+      this.app.workspace.on("window-open", () => {
+        this.applyThemeScrollOverride();
+      })
+    );
     this.outlineHook = new OutlineHook(this.app, () => this.settings);
     this.outlineHook.register();
     this.addSettingTab(new HeadingJumpFixSettingTab(this.app, this));
@@ -424,6 +526,7 @@ var HeadingJumpFixPlugin = class extends import_obsidian4.Plugin {
   }
   onunload() {
     var _a;
+    applyInstantScrollOverride(this.app, false);
     (_a = this.outlineHook) == null ? void 0 : _a.unregister();
     this.outlineHook = null;
   }
@@ -434,6 +537,10 @@ var HeadingJumpFixPlugin = class extends import_obsidian4.Plugin {
   }
   async saveSettings() {
     await this.saveData(toStorage(this.settings, this.lastSeenVersion));
+    this.applyThemeScrollOverride();
+  }
+  applyThemeScrollOverride() {
+    applyInstantScrollOverride(this.app, this.settings.overrideThemeScroll);
   }
   async maybeShowFundingModal() {
     const currentVersion = this.manifest.version;
@@ -449,9 +556,14 @@ var HeadingJumpFixPlugin = class extends import_obsidian4.Plugin {
     if (!this.settings.enabled || !file) return;
     const cursor = editor.getCursor();
     const resolved = findHeadingAtLine(this.app, file, cursor.line);
+    debugLog(this.settings.debugLog, "command jump", {
+      file: file.path,
+      cursorLine: cursor.line
+    });
     await reliableJump(editor, resolved, {
       retryCount: this.settings.retryCount,
-      retryDelayMs: this.settings.retryDelayMs
+      retryDelayMs: this.settings.retryDelayMs,
+      debugLog: this.settings.debugLog
     });
   }
 };

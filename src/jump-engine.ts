@@ -1,9 +1,11 @@
 import type { Editor } from "obsidian";
+import { debugLog } from "./debug";
 import type { ResolvedHeading } from "./heading-resolver";
 
 export interface JumpOptions {
   retryCount: number;
   retryDelayMs: number;
+  debugLog?: boolean;
 }
 
 export interface JumpResult {
@@ -39,11 +41,27 @@ export async function reliableJump(
   resolved: ResolvedHeading | null,
   options: JumpOptions
 ): Promise<JumpResult> {
+  const log = !!options.debugLog;
+
   if (!editor) {
-    return { ok: false, line: -1, retries: 0, reason: "no-editor" };
+    const result: JumpResult = {
+      ok: false,
+      line: -1,
+      retries: 0,
+      reason: "no-editor",
+    };
+    debugLog(log, "jump failed", result);
+    return result;
   }
   if (!resolved) {
-    return { ok: false, line: -1, retries: 0, reason: "not-found" };
+    const result: JumpResult = {
+      ok: false,
+      line: -1,
+      retries: 0,
+      reason: "not-found",
+    };
+    debugLog(log, "jump failed", result);
+    return result;
   }
 
   const { line } = resolved;
@@ -53,9 +71,21 @@ export async function reliableJump(
     if (i > 0 && options.retryDelayMs > 0) {
       await delay(options.retryDelayMs);
     }
+    debugLog(log, "scroll pass", {
+      line,
+      heading: resolved.heading.heading,
+      pass: i + 1,
+      of: passes,
+    });
     scrollLineIntoView(editor, line);
     await doubleRafScroll(editor, line);
   }
 
-  return { ok: true, line, retries: Math.max(0, passes - 1) };
+  const result: JumpResult = {
+    ok: true,
+    line,
+    retries: Math.max(0, passes - 1),
+  };
+  debugLog(log, "jump result", result);
+  return result;
 }

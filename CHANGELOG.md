@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0 — 2026-08-19
+
+Phase 3: theme scroll-behavior override and debug log.
+
+### Added
+
+- Setting **Override theme scroll-behavior** (default ON) — forces instant editor scroll so theme `scroll-behavior: smooth` does not miss the heading
+- Setting **Debug log** (default OFF) — writes jump details to the developer console (no network)
+
+### Notes
+
+- Wikilink / viewport verify (Phase 2) remains planned
+- Outline DOM may change in future app versions
+
 ## 0.1.3 — 2026-08-19
 
 ### Fixed

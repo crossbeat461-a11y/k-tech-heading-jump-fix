@@ -7,6 +7,7 @@ import {
   resolveHeading,
 } from "./heading-resolver";
 import { reliableJump } from "./jump-engine";
+import { debugLog } from "./debug";
 
 export const OUTLINE_SELECTORS = {
   leaf: '.workspace-leaf-content[data-type="outline"]',
@@ -80,6 +81,13 @@ export class OutlineHook {
     if (!markdownView?.editor) return;
 
     this.clearPending();
+    debugLog(settings.debugLog, "outline click", {
+      headingText,
+      level,
+      occurrenceIndex,
+      file: file.path,
+      delayMs: settings.retryDelayMs,
+    });
     this.pendingTimer = window.setTimeout(() => {
       this.pendingTimer = null;
       void this.performJump(file, headingText, level, occurrenceIndex);
@@ -107,6 +115,7 @@ export class OutlineHook {
     await reliableJump(editor, resolved, {
       retryCount: settings.retryCount,
       retryDelayMs: settings.retryDelayMs,
+      debugLog: settings.debugLog,
     });
   }
 }

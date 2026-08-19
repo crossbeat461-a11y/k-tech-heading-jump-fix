@@ -1,1 +1,7 @@
-/* Heading Jump Fix — Phase 1: no styles required */
+/* Override theme CSS that sets scroll-behavior: smooth.
+   Smooth scrolling can leave the heading off-screen after outline jumps. */
+body.heading-jump-fix-instant-scroll .markdown-source-view.mod-cm6 .cm-scroller,
+body.heading-jump-fix-instant-scroll .markdown-preview-view,
+body.heading-jump-fix-instant-scroll .markdown-reading-view .markdown-preview-view {
+  scroll-behavior: auto !important;
+}

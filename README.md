@@ -49,6 +49,8 @@ In Live Preview, clicking a heading in the Outline sometimes moves the cursor bu
 | Outline click fix | ON | Retry scroll after outline clicks |
 | Retry delay (ms) | 250 | Wait before correction |
 | Retry count | 1 | Extra scroll passes |
+| Override theme scroll-behavior | ON | Instant editor scroll (ignore theme smooth-scroll) |
+| Debug log | OFF | Jump details in the developer console |
 
 **Command palette:** `Jump to heading at cursor line reliably` — scrolls to the heading that contains the current cursor line.
 
@@ -104,6 +106,8 @@ Live Preview でアウトラインの見出しをクリックしても、カー�
 | アウトラインクリック補正 | ON | アウトラインクリック後にスクロールを再試行 |
 | リトライ遅延 (ms) | 250 | 補正までの待ち時間 |
 | リトライ回数 | 1 | 追加のスクロール回数 |
+| テーマの scroll-behavior を上書き | ON | エディタを即時スクロール（テーマのスムーズスクロールを無効化） |
+| デバッグログ | OFF | 開発者コンソールにジャンプ詳細を出す |
 
 **コマンドパレット:** `Jump to heading at cursor line reliably` — カーソル行を含む見出しまでスクロールします。
 
