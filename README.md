@@ -66,6 +66,10 @@ See [HANDOFF.md](./HANDOFF.md) for architecture and Phase 2 plans.
 
 K-Tech Studio — [Buy Me a Coffee](https://buymeacoffee.com/k_tech_studio)
 
+### Disclaimer (no warranty)
+
+This software is provided **as is**, without warranty of any kind. The developer does not guarantee that it will work in every environment. Use at your own risk. See the [MIT License](LICENSE).
+
 ### License
 
 MIT
@@ -98,5 +102,13 @@ Live Preview でアウトラインの見出しをクリックしても、カー�
 3. 長いノートでアウトラインから見出しを1回クリック
 
 テスト用ノート: [test/fixtures/long-note.md](./test/fixtures/long-note.md) を Vault にコピーして使用。
+
+### 免責（無保証）
+
+本ソフトウェアは **現状有姿（無保証）** で提供します。あらゆる環境での動作を保証しません。利用は自己責任です。詳細は [MIT ライセンス](LICENSE) を参照してください。
+
+### ライセンス
+
+MIT
 
 </details>
