@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.0 — 2026-08-19
+
+Stable release. Includes Phase 2 (wikilink / viewport verify / link pane) and Phase 4 (stabilize).
+
+### Added
+
+- In-note `[[wikilink#heading]]` click correction (Live Preview and preview links)
+- Outgoing links / Backlinks pane heading click correction
+- Viewport check after each scroll pass; stop early when the heading is on screen
+- Exponential backoff on extra retry passes
+- Settings: wikilink fix, link pane fix, scroll heading to center
+- Pop-out window click listeners (outline and links)
+
+### Notes
+
+- Community listing stays on community.obsidian.md; update copy from `LISTING.md` after the GitHub Release
+- Block references (`#^`) are not corrected
+- Reading-view heading clicks that are not links are unchanged
+
 ## 0.3.0 — 2026-08-19
 
 Phase 3: theme scroll-behavior override and debug log.

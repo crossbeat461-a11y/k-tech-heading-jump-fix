@@ -10,8 +10,11 @@ import type HeadingJumpFixPlugin from "./main";
 export interface HeadingJumpFixSettings {
   enabled: boolean;
   outlineFix: boolean;
+  bodyLinkFix: boolean;
+  linkPaneFix: boolean;
   retryDelayMs: number;
   retryCount: number;
+  scrollToCenter: boolean;
   overrideThemeScroll: boolean;
   debugLog: boolean;
 }
@@ -21,8 +24,11 @@ export type HeadingJumpFixSettingKey = keyof HeadingJumpFixSettings;
 export const DEFAULT_SETTINGS: HeadingJumpFixSettings = {
   enabled: true,
   outlineFix: true,
+  bodyLinkFix: true,
+  linkPaneFix: true,
   retryDelayMs: 250,
   retryCount: 1,
+  scrollToCenter: true,
   overrideThemeScroll: true,
   debugLog: false,
 };
@@ -56,6 +62,24 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
         },
       },
       {
+        name: "Wikilink click fix",
+        desc: "Retry scroll after in-note [[wikilink#heading]] clicks.",
+        control: {
+          type: "toggle",
+          key: "bodyLinkFix",
+          defaultValue: DEFAULT_SETTINGS.bodyLinkFix,
+        },
+      },
+      {
+        name: "Link pane click fix",
+        desc: "Retry scroll after heading clicks in Outgoing links / Backlinks.",
+        control: {
+          type: "toggle",
+          key: "linkPaneFix",
+          defaultValue: DEFAULT_SETTINGS.linkPaneFix,
+        },
+      },
+      {
         name: "Retry delay (ms)",
         desc: "Wait before correcting scroll (default 250).",
         control: {
@@ -67,12 +91,21 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
       },
       {
         name: "Retry count",
-        desc: "Number of correction passes after outline click (default 1).",
+        desc: "Number of correction passes. Later passes wait longer (backoff).",
         control: {
           type: "number",
           key: "retryCount",
           min: 0,
           defaultValue: DEFAULT_SETTINGS.retryCount,
+        },
+      },
+      {
+        name: "Scroll heading to center",
+        desc: "Place the heading near the middle of the editor. Off = align to the top.",
+        control: {
+          type: "toggle",
+          key: "scrollToCenter",
+          defaultValue: DEFAULT_SETTINGS.scrollToCenter,
         },
       },
       {
@@ -149,6 +182,30 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName("Wikilink click fix")
+      .setDesc("Retry scroll after in-note [[wikilink#heading]] clicks.")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.bodyLinkFix)
+          .onChange(async (value) => {
+            this.plugin.settings.bodyLinkFix = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Link pane click fix")
+      .setDesc("Retry scroll after heading clicks in Outgoing links / Backlinks.")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.linkPaneFix)
+          .onChange(async (value) => {
+            this.plugin.settings.linkPaneFix = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
       .setName("Retry delay (ms)")
       .setDesc("Wait before correcting scroll (default 250).")
       .addText((text) =>
@@ -165,7 +222,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Retry count")
-      .setDesc("Number of correction passes after outline click (default 1).")
+      .setDesc("Number of correction passes. Later passes wait longer (backoff).")
       .addText((text) =>
         text
           .setPlaceholder("1")
@@ -174,6 +231,20 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
             const parsed = parseInt(value, 10);
             if (!Number.isFinite(parsed) || parsed < 0) return;
             this.plugin.settings.retryCount = parsed;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Scroll heading to center")
+      .setDesc(
+        "Place the heading near the middle of the editor. Off = align to the top."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.scrollToCenter)
+          .onChange(async (value) => {
+            this.plugin.settings.scrollToCenter = value;
             await this.plugin.saveSettings();
           })
       );
