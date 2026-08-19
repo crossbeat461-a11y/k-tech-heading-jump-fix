@@ -38,6 +38,26 @@ export function resolveHeading(
   return { line: heading.position.start.line, heading };
 }
 
+export function resolveHeadingByText(
+  app: App,
+  file: TFile,
+  headingText: string,
+  occurrenceIndex = 0
+): ResolvedHeading | null {
+  const cache = app.metadataCache.getFileCache(file);
+  const headings = cache?.headings;
+  if (!headings?.length) return null;
+
+  const normalized = normalizeHeadingText(headingText);
+  const matches = headings.filter(
+    (h) => normalizeHeadingText(h.heading) === normalized
+  );
+  if (!matches.length) return null;
+
+  const heading = matches[Math.min(occurrenceIndex, matches.length - 1)];
+  return { line: heading.position.start.line, heading };
+}
+
 export function findHeadingAtLine(
   app: App,
   file: TFile,

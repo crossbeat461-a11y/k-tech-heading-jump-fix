@@ -10,8 +10,8 @@ globs:
 
 ## スコープ
 
-- Phase 1 (v0.1): アウトラインクリック後の遅延リトライ + scroll 補正のみ
-- Phase 2+: 本文リンク、位置検証、テーマ CSS — 計画書参照、勝手に広げない
+- Phase 1.0 (stable): outline, wikilink, link pane, viewport verify, theme CSS
+- New features: add to HANDOFF first, do not expand the public README with build steps
 
 ## コーディング
 

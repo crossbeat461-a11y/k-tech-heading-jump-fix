@@ -6,8 +6,9 @@ import {
   type HeadingJumpFixSettings,
 } from "./settings";
 import { findHeadingAtLine } from "./heading-resolver";
-import { reliableJump } from "./jump-engine";
+import { jumpOptionsFromSettings, reliableJump } from "./jump-engine";
 import { OutlineHook } from "./outline-hook";
+import { LinkHook } from "./link-hook";
 import { parseStorage, toStorage } from "./storage";
 import { applyInstantScrollOverride } from "./theme-scroll";
 import { debugLog } from "./debug";
@@ -16,6 +17,7 @@ export default class HeadingJumpFixPlugin extends Plugin {
   settings: HeadingJumpFixSettings = DEFAULT_SETTINGS;
   private lastSeenVersion?: string;
   private outlineHook: OutlineHook | null = null;
+  private linkHook: LinkHook | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -27,7 +29,9 @@ export default class HeadingJumpFixPlugin extends Plugin {
     );
 
     this.outlineHook = new OutlineHook(this.app, () => this.settings);
-    this.outlineHook.register();
+    this.outlineHook.register(this);
+    this.linkHook = new LinkHook(this.app, () => this.settings);
+    this.linkHook.register(this);
 
     this.addSettingTab(new HeadingJumpFixSettingTab(this.app, this));
 
@@ -46,6 +50,8 @@ export default class HeadingJumpFixPlugin extends Plugin {
     applyInstantScrollOverride(this.app, false);
     this.outlineHook?.unregister();
     this.outlineHook = null;
+    this.linkHook?.unregister();
+    this.linkHook = null;
   }
 
   async loadSettings(): Promise<void> {
@@ -88,10 +94,10 @@ export default class HeadingJumpFixPlugin extends Plugin {
       file: file.path,
       cursorLine: cursor.line,
     });
-    await reliableJump(editor, resolved, {
-      retryCount: this.settings.retryCount,
-      retryDelayMs: this.settings.retryDelayMs,
-      debugLog: this.settings.debugLog,
-    });
+    await reliableJump(
+      editor,
+      resolved,
+      jumpOptionsFromSettings(this.settings)
+    );
   }
 }

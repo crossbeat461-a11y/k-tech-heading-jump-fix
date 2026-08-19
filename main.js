@@ -26,7 +26,7 @@ __export(main_exports, {
   default: () => HeadingJumpFixPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian4 = require("obsidian");
+var import_obsidian5 = require("obsidian");
 
 // src/funding.ts
 var import_obsidian = require("obsidian");
@@ -75,8 +75,11 @@ var import_obsidian2 = require("obsidian");
 var DEFAULT_SETTINGS = {
   enabled: true,
   outlineFix: true,
+  bodyLinkFix: true,
+  linkPaneFix: true,
   retryDelayMs: 250,
   retryCount: 1,
+  scrollToCenter: true,
   overrideThemeScroll: true,
   debugLog: false
 };
@@ -106,6 +109,24 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
         }
       },
       {
+        name: "Wikilink click fix",
+        desc: "Retry scroll after in-note [[wikilink#heading]] clicks.",
+        control: {
+          type: "toggle",
+          key: "bodyLinkFix",
+          defaultValue: DEFAULT_SETTINGS.bodyLinkFix
+        }
+      },
+      {
+        name: "Link pane click fix",
+        desc: "Retry scroll after heading clicks in Outgoing links / Backlinks.",
+        control: {
+          type: "toggle",
+          key: "linkPaneFix",
+          defaultValue: DEFAULT_SETTINGS.linkPaneFix
+        }
+      },
+      {
         name: "Retry delay (ms)",
         desc: "Wait before correcting scroll (default 250).",
         control: {
@@ -117,12 +138,21 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
       },
       {
         name: "Retry count",
-        desc: "Number of correction passes after outline click (default 1).",
+        desc: "Number of correction passes. Later passes wait longer (backoff).",
         control: {
           type: "number",
           key: "retryCount",
           min: 0,
           defaultValue: DEFAULT_SETTINGS.retryCount
+        }
+      },
+      {
+        name: "Scroll heading to center",
+        desc: "Place the heading near the middle of the editor. Off = align to the top.",
+        control: {
+          type: "toggle",
+          key: "scrollToCenter",
+          defaultValue: DEFAULT_SETTINGS.scrollToCenter
         }
       },
       {
@@ -181,6 +211,18 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     );
+    new import_obsidian2.Setting(containerEl).setName("Wikilink click fix").setDesc("Retry scroll after in-note [[wikilink#heading]] clicks.").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.bodyLinkFix).onChange(async (value) => {
+        this.plugin.settings.bodyLinkFix = value;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian2.Setting(containerEl).setName("Link pane click fix").setDesc("Retry scroll after heading clicks in Outgoing links / Backlinks.").addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.linkPaneFix).onChange(async (value) => {
+        this.plugin.settings.linkPaneFix = value;
+        await this.plugin.saveSettings();
+      })
+    );
     new import_obsidian2.Setting(containerEl).setName("Retry delay (ms)").setDesc("Wait before correcting scroll (default 250).").addText(
       (text) => text.setPlaceholder("250").setValue(String(this.plugin.settings.retryDelayMs)).onChange(async (value) => {
         const parsed = parseInt(value, 10);
@@ -189,11 +231,19 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian2.Setting(containerEl).setName("Retry count").setDesc("Number of correction passes after outline click (default 1).").addText(
+    new import_obsidian2.Setting(containerEl).setName("Retry count").setDesc("Number of correction passes. Later passes wait longer (backoff).").addText(
       (text) => text.setPlaceholder("1").setValue(String(this.plugin.settings.retryCount)).onChange(async (value) => {
         const parsed = parseInt(value, 10);
         if (!Number.isFinite(parsed) || parsed < 0) return;
         this.plugin.settings.retryCount = parsed;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian2.Setting(containerEl).setName("Scroll heading to center").setDesc(
+      "Place the heading near the middle of the editor. Off = align to the top."
+    ).addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.scrollToCenter).onChange(async (value) => {
+        this.plugin.settings.scrollToCenter = value;
         await this.plugin.saveSettings();
       })
     );
@@ -236,6 +286,18 @@ function resolveHeading(app, target) {
   if (!matches.length) return null;
   const occurrence = (_a = target.occurrenceIndex) != null ? _a : 0;
   const heading = matches[Math.min(occurrence, matches.length - 1)];
+  return { line: heading.position.start.line, heading };
+}
+function resolveHeadingByText(app, file, headingText, occurrenceIndex = 0) {
+  const cache = app.metadataCache.getFileCache(file);
+  const headings = cache == null ? void 0 : cache.headings;
+  if (!(headings == null ? void 0 : headings.length)) return null;
+  const normalized = normalizeHeadingText(headingText);
+  const matches = headings.filter(
+    (h) => normalizeHeadingText(h.heading) === normalized
+  );
+  if (!matches.length) return null;
+  const heading = matches[Math.min(occurrenceIndex, matches.length - 1)];
   return { line: heading.position.start.line, heading };
 }
 function findHeadingAtLine(app, file, line) {
@@ -306,16 +368,44 @@ function debugLog(enabled, message, extra) {
 }
 
 // src/jump-engine.ts
-function scrollLineIntoView(editor, line) {
+function jumpOptionsFromSettings(settings) {
+  return {
+    retryCount: settings.retryCount,
+    retryDelayMs: settings.retryDelayMs,
+    debugLog: settings.debugLog,
+    scrollToCenter: settings.scrollToCenter
+  };
+}
+function getCm(editor) {
+  var _a;
+  const rec = editor;
+  return (_a = rec.cm) != null ? _a : null;
+}
+function isHeadingVisible(editor, line) {
+  var _a;
+  const cm = getCm(editor);
+  if (!(cm == null ? void 0 : cm.coordsAtPos) || !((_a = cm.state) == null ? void 0 : _a.doc) || !cm.scrollDOM) return null;
+  try {
+    const docLine = cm.state.doc.line(line + 1);
+    const coords = cm.coordsAtPos(docLine.from);
+    if (!coords) return false;
+    const box = cm.scrollDOM.getBoundingClientRect();
+    const margin = 8;
+    return coords.top >= box.top - margin && coords.bottom <= box.bottom + margin;
+  } catch (e) {
+    return null;
+  }
+}
+function scrollLineIntoView(editor, line, center) {
   const pos = { line, ch: 0 };
   editor.setCursor(pos);
-  editor.scrollIntoView({ from: pos, to: pos }, true);
+  editor.scrollIntoView({ from: pos, to: pos }, center);
 }
-function doubleRafScroll(editor, line) {
+function doubleRafScroll(editor, line, center) {
   return new Promise((resolve) => {
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
-        scrollLineIntoView(editor, line);
+        scrollLineIntoView(editor, line, center);
         resolve();
       });
     });
@@ -324,8 +414,12 @@ function doubleRafScroll(editor, line) {
 function delay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
+function backoffMs(baseMs, extraPassIndex) {
+  return baseMs * Math.pow(2, extraPassIndex);
+}
 async function reliableJump(editor, resolved, options) {
   const log = !!options.debugLog;
+  const center = options.scrollToCenter !== false;
   if (!editor) {
     const result2 = {
       ok: false,
@@ -348,23 +442,29 @@ async function reliableJump(editor, resolved, options) {
   }
   const { line } = resolved;
   const passes = Math.max(1, options.retryCount + 1);
+  let visible = null;
   for (let i = 0; i < passes; i++) {
     if (i > 0 && options.retryDelayMs > 0) {
-      await delay(options.retryDelayMs);
+      await delay(backoffMs(options.retryDelayMs, i - 1));
     }
     debugLog(log, "scroll pass", {
       line,
       heading: resolved.heading.heading,
       pass: i + 1,
-      of: passes
+      of: passes,
+      center
     });
-    scrollLineIntoView(editor, line);
-    await doubleRafScroll(editor, line);
+    scrollLineIntoView(editor, line, center);
+    await doubleRafScroll(editor, line, center);
+    visible = isHeadingVisible(editor, line);
+    debugLog(log, "viewport check", { line, visible });
+    if (visible === true) break;
   }
   const result = {
     ok: true,
     line,
-    retries: Math.max(0, passes - 1)
+    retries: Math.max(0, passes - 1),
+    visible
   };
   debugLog(log, "jump result", result);
   return result;
@@ -384,19 +484,40 @@ var OutlineHook = class {
     this.getSettings = getSettings;
     this.handler = null;
     this.pendingTimer = null;
+    this.attached = /* @__PURE__ */ new Set();
   }
-  register() {
+  register(plugin) {
     this.handler = (event) => {
       void this.onClick(event);
     };
-    document.addEventListener("click", this.handler, true);
+    this.attach(document);
+    plugin.registerEvent(
+      this.app.workspace.on("window-open", (_win, window2) => {
+        this.attach(window2.document);
+      })
+    );
+    plugin.registerEvent(
+      this.app.workspace.on("window-close", (_win, window2) => {
+        this.detach(window2.document);
+      })
+    );
   }
   unregister() {
-    if (this.handler) {
-      document.removeEventListener("click", this.handler, true);
-      this.handler = null;
+    for (const doc of [...this.attached]) {
+      this.detach(doc);
     }
+    this.handler = null;
     this.clearPending();
+  }
+  attach(doc) {
+    if (!this.handler || this.attached.has(doc)) return;
+    doc.addEventListener("click", this.handler, true);
+    this.attached.add(doc);
+  }
+  detach(doc) {
+    if (!this.handler || !this.attached.has(doc)) return;
+    doc.removeEventListener("click", this.handler, true);
+    this.attached.delete(doc);
   }
   clearPending() {
     if (this.pendingTimer !== null) {
@@ -452,13 +573,147 @@ var OutlineHook = class {
       level,
       occurrenceIndex
     });
-    await reliableJump(editor, resolved, {
-      retryCount: settings.retryCount,
-      retryDelayMs: settings.retryDelayMs,
-      debugLog: settings.debugLog
-    });
+    await reliableJump(
+      editor,
+      resolved,
+      jumpOptionsFromSettings(settings)
+    );
   }
 };
+
+// src/link-hook.ts
+var import_obsidian4 = require("obsidian");
+var LINK_PANE_LEAF = '.workspace-leaf-content[data-type="outgoing-link"], .workspace-leaf-content[data-type="backlink"]';
+var OUTLINE_LEAF = '.workspace-leaf-content[data-type="outline"]';
+var LinkHook = class {
+  constructor(app, getSettings) {
+    this.app = app;
+    this.getSettings = getSettings;
+    this.handler = null;
+    this.pendingTimer = null;
+    this.attached = /* @__PURE__ */ new Set();
+  }
+  register(plugin) {
+    this.handler = (event) => {
+      this.onClick(event);
+    };
+    this.attach(document);
+    plugin.registerEvent(
+      this.app.workspace.on("window-open", (_win, window2) => {
+        this.attach(window2.document);
+      })
+    );
+    plugin.registerEvent(
+      this.app.workspace.on("window-close", (_win, window2) => {
+        this.detach(window2.document);
+      })
+    );
+  }
+  unregister() {
+    for (const doc of [...this.attached]) {
+      this.detach(doc);
+    }
+    this.handler = null;
+    this.clearPending();
+  }
+  attach(doc) {
+    if (!this.handler || this.attached.has(doc)) return;
+    doc.addEventListener("click", this.handler, true);
+    this.attached.add(doc);
+  }
+  detach(doc) {
+    if (!this.handler || !this.attached.has(doc)) return;
+    doc.removeEventListener("click", this.handler, true);
+    this.attached.delete(doc);
+  }
+  clearPending() {
+    if (this.pendingTimer !== null) {
+      window.clearTimeout(this.pendingTimer);
+      this.pendingTimer = null;
+    }
+  }
+  onClick(event) {
+    var _a, _b;
+    const settings = this.getSettings();
+    if (!settings.enabled) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest(OUTLINE_LEAF)) return;
+    const inPane = !!target.closest(LINK_PANE_LEAF);
+    if (inPane && !settings.linkPaneFix) return;
+    if (!inPane && !settings.bodyLinkFix) return;
+    const href = findInternalHeadingHref(target);
+    if (!href) return;
+    const parsed = (0, import_obsidian4.parseLinktext)(href);
+    const headingText = headingFromSubpath(parsed.subpath);
+    if (!headingText) return;
+    const sourcePath = (_b = (_a = this.app.workspace.getActiveFile()) == null ? void 0 : _a.path) != null ? _b : "";
+    this.clearPending();
+    debugLog(settings.debugLog, inPane ? "link pane click" : "wikilink click", {
+      href,
+      path: parsed.path,
+      headingText,
+      delayMs: settings.retryDelayMs
+    });
+    this.pendingTimer = window.setTimeout(() => {
+      this.pendingTimer = null;
+      void this.performJump(parsed.path, headingText, sourcePath);
+    }, settings.retryDelayMs);
+  }
+  async performJump(linkpath, headingText, sourcePath) {
+    const settings = this.getSettings();
+    const file = resolveDestFile(this.app, linkpath, sourcePath);
+    if (!file) return;
+    const markdownView = findMarkdownView(this.app, file);
+    const editor = markdownView == null ? void 0 : markdownView.editor;
+    if (!editor) return;
+    const resolved = resolveHeadingByText(this.app, file, headingText);
+    await reliableJump(editor, resolved, jumpOptionsFromSettings(settings));
+  }
+};
+function headingFromSubpath(subpath) {
+  if (!subpath || subpath.startsWith("#^")) return null;
+  const raw = subpath.startsWith("#") ? subpath.slice(1) : subpath;
+  if (!raw) return null;
+  try {
+    return decodeURIComponent(raw).trim();
+  } catch (e) {
+    return raw.trim();
+  }
+}
+function findInternalHeadingHref(start) {
+  let cur = start;
+  for (let i = 0; i < 10 && cur; i++) {
+    const dataHref = cur.getAttribute("data-href");
+    if (dataHref && dataHref.includes("#") && !dataHref.includes("#^")) {
+      return dataHref;
+    }
+    const href = cur.getAttribute("href");
+    if (href && href.includes("#") && !href.includes("#^") && (cur.classList.contains("internal-link") || cur.getAttribute("data-href") !== null)) {
+      return href;
+    }
+    cur = cur.parentElement;
+  }
+  return null;
+}
+function resolveDestFile(app, linkpath, sourcePath) {
+  var _a;
+  if (!linkpath) return app.workspace.getActiveFile();
+  return (_a = app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath)) != null ? _a : app.workspace.getActiveFile();
+}
+function findMarkdownView(app, file) {
+  var _a, _b;
+  const leaves = app.workspace.getLeavesOfType("markdown");
+  for (const leaf of leaves) {
+    const view = leaf.view;
+    if (view instanceof import_obsidian4.MarkdownView && ((_a = view.file) == null ? void 0 : _a.path) === file.path) {
+      return view;
+    }
+  }
+  const active = app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
+  if (((_b = active == null ? void 0 : active.file) == null ? void 0 : _b.path) === file.path) return active;
+  return active;
+}
 
 // src/storage.ts
 function parseStorage(raw) {
@@ -498,11 +753,12 @@ function collectDocuments(app) {
 }
 
 // src/main.ts
-var HeadingJumpFixPlugin = class extends import_obsidian4.Plugin {
+var HeadingJumpFixPlugin = class extends import_obsidian5.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
     this.outlineHook = null;
+    this.linkHook = null;
   }
   async onload() {
     await this.loadSettings();
@@ -513,7 +769,9 @@ var HeadingJumpFixPlugin = class extends import_obsidian4.Plugin {
       })
     );
     this.outlineHook = new OutlineHook(this.app, () => this.settings);
-    this.outlineHook.register();
+    this.outlineHook.register(this);
+    this.linkHook = new LinkHook(this.app, () => this.settings);
+    this.linkHook.register(this);
     this.addSettingTab(new HeadingJumpFixSettingTab(this.app, this));
     this.addCommand({
       id: "jump-to-heading-at-cursor",
@@ -525,10 +783,12 @@ var HeadingJumpFixPlugin = class extends import_obsidian4.Plugin {
     await this.maybeShowFundingModal();
   }
   onunload() {
-    var _a;
+    var _a, _b;
     applyInstantScrollOverride(this.app, false);
     (_a = this.outlineHook) == null ? void 0 : _a.unregister();
     this.outlineHook = null;
+    (_b = this.linkHook) == null ? void 0 : _b.unregister();
+    this.linkHook = null;
   }
   async loadSettings() {
     const storage = parseStorage(await this.loadData());
@@ -560,10 +820,10 @@ var HeadingJumpFixPlugin = class extends import_obsidian4.Plugin {
       file: file.path,
       cursorLine: cursor.line
     });
-    await reliableJump(editor, resolved, {
-      retryCount: this.settings.retryCount,
-      retryDelayMs: this.settings.retryDelayMs,
-      debugLog: this.settings.debugLog
-    });
+    await reliableJump(
+      editor,
+      resolved,
+      jumpOptionsFromSettings(this.settings)
+    );
   }
 };

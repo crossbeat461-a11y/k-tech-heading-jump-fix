@@ -1,4 +1,4 @@
-import { MarkdownView, type App, type TFile } from "obsidian";
+import { MarkdownView, Plugin, type App, type TFile } from "obsidian";
 import type { HeadingJumpFixSettings } from "./settings";
 import {
   countPriorMatchingHeadings,
@@ -6,7 +6,7 @@ import {
   getOutlineItemText,
   resolveHeading,
 } from "./heading-resolver";
-import { reliableJump } from "./jump-engine";
+import { jumpOptionsFromSettings, reliableJump } from "./jump-engine";
 import { debugLog } from "./debug";
 
 export const OUTLINE_SELECTORS = {
@@ -19,25 +19,48 @@ export const OUTLINE_SELECTORS = {
 export class OutlineHook {
   private handler: ((event: MouseEvent) => void) | null = null;
   private pendingTimer: ReturnType<typeof window.setTimeout> | null = null;
+  private attached = new Set<Document>();
 
   constructor(
     private app: App,
     private getSettings: () => HeadingJumpFixSettings
   ) {}
 
-  register(): void {
+  register(plugin: Plugin): void {
     this.handler = (event: MouseEvent) => {
       void this.onClick(event);
     };
-    document.addEventListener("click", this.handler, true);
+    this.attach(document);
+    plugin.registerEvent(
+      this.app.workspace.on("window-open", (_win, window) => {
+        this.attach(window.document);
+      })
+    );
+    plugin.registerEvent(
+      this.app.workspace.on("window-close", (_win, window) => {
+        this.detach(window.document);
+      })
+    );
   }
 
   unregister(): void {
-    if (this.handler) {
-      document.removeEventListener("click", this.handler, true);
-      this.handler = null;
+    for (const doc of [...this.attached]) {
+      this.detach(doc);
     }
+    this.handler = null;
     this.clearPending();
+  }
+
+  private attach(doc: Document): void {
+    if (!this.handler || this.attached.has(doc)) return;
+    doc.addEventListener("click", this.handler, true);
+    this.attached.add(doc);
+  }
+
+  private detach(doc: Document): void {
+    if (!this.handler || !this.attached.has(doc)) return;
+    doc.removeEventListener("click", this.handler, true);
+    this.attached.delete(doc);
   }
 
   private clearPending(): void {
@@ -112,10 +135,10 @@ export class OutlineHook {
       occurrenceIndex,
     });
 
-    await reliableJump(editor, resolved, {
-      retryCount: settings.retryCount,
-      retryDelayMs: settings.retryDelayMs,
-      debugLog: settings.debugLog,
-    });
+    await reliableJump(
+      editor,
+      resolved,
+      jumpOptionsFromSettings(settings)
+    );
   }
 }
