@@ -12,6 +12,12 @@
 | Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` (not pushed yet) |
 | Version | 0.1.0 (Phase 1) |
 
+## README (community listing)
+
+`README.md` is user-facing. [community.obsidian.md](https://community.obsidian.md/plugins/k-tech-heading-jump-fix) shows it as the plugin overview. Keep install steps as Community plugins only. Do not put `npm`, manual plugin-folder copy, `HANDOFF.md`, or test fixtures in the README.
+
+Build and local deploy stay in this file.
+
 ## Build
 
 ```bash
