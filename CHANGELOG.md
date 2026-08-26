@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 — 2026-08-26
+
+### Added
+
+- Correct scroll after `[[note#^block]]` clicks (same retry path as heading jumps)
+- Works in the note and in Outgoing links / Backlinks (uses the existing wikilink / link-pane settings)
+
+### Notes
+
+- Reading-view heading clicks that are not links are unchanged
+
 ## 1.0.0 — 2026-08-19
 
 Stable release. Includes Phase 2 (wikilink / viewport verify / link pane) and Phase 4 (stabilize).

@@ -1,6 +1,6 @@
 # HANDOFF — Heading Jump Fix
 
-<!-- updated: 2026-08-19 -->
+<!-- updated: 2026-08-26 -->
 
 ## Product
 
@@ -10,7 +10,7 @@
 | Name | Heading Jump Fix |
 | Author | K-Tech Studio |
 | Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` |
-| Version | 1.0.0 (stable) |
+| Version | 1.1.0 (stable) |
 
 ## README (community listing)
 
@@ -45,7 +45,7 @@ Enable in Settings → Community plugins → Heading Jump Fix.
 ```
 src/main.ts              Plugin entry, settings, command, theme CSS class
 src/settings.ts          Settings + tab UI
-src/heading-resolver.ts  metadataCache → line; outline DOM helpers
+src/heading-resolver.ts  metadataCache → line; outline DOM helpers; block ids
 src/jump-engine.ts       scroll + rAF retry + viewport verify + backoff
 src/outline-hook.ts      Outline click capture (popout-safe)
 src/link-hook.ts         Wikilink + outgoing/backlink pane clicks
@@ -62,6 +62,7 @@ styles.css               Override theme scroll-behavior: smooth
 | 2 | 0.2.0 | Viewport verify, wikilink hook, link pane | **Done** (shipped in 1.0.0) |
 | 3 | 0.3.0 | Theme scroll-behavior CSS, debug log | **Done** |
 | 4 | 1.0.0 | Stabilize, community listing decision | **Done** |
+| 5 | 1.1.0 | Block reference (`#^`) jump correction | **Done** |
 
 ## Test
 
@@ -73,7 +74,9 @@ Checklist (manual in Obsidian):
 - [ ] First jump after app cold start
 - [ ] Duplicate heading (second "Duplicate name")
 - [ ] `[[note#heading]]` in Live Preview
+- [ ] `[[note#^block]]` in Live Preview
 - [ ] Heading click in Outgoing links / Backlinks
+- [ ] Block-reference click in Outgoing links / Backlinks
 - [ ] Plugin disabled → no hook
 - [ ] Coexists with TableCSV, Tasks, Dataview
 - [ ] Theme with `scroll-behavior: smooth` still lands on the heading (override ON)

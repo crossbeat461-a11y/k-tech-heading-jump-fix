@@ -63,7 +63,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
       },
       {
         name: "Wikilink click fix",
-        desc: "Retry scroll after in-note [[wikilink#heading]] clicks.",
+        desc: "Retry scroll after in-note [[wikilink#heading]] and [[note#^block]] clicks.",
         control: {
           type: "toggle",
           key: "bodyLinkFix",
@@ -72,7 +72,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
       },
       {
         name: "Link pane click fix",
-        desc: "Retry scroll after heading clicks in Outgoing links / Backlinks.",
+        desc: "Retry scroll after heading or block-reference clicks in Outgoing links / Backlinks.",
         control: {
           type: "toggle",
           key: "linkPaneFix",
@@ -183,7 +183,9 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Wikilink click fix")
-      .setDesc("Retry scroll after in-note [[wikilink#heading]] clicks.")
+      .setDesc(
+        "Retry scroll after in-note [[wikilink#heading]] and [[note#^block]] clicks."
+      )
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.bodyLinkFix)
@@ -195,7 +197,9 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Link pane click fix")
-      .setDesc("Retry scroll after heading clicks in Outgoing links / Backlinks.")
+      .setDesc(
+        "Retry scroll after heading or block-reference clicks in Outgoing links / Backlinks."
+      )
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.linkPaneFix)

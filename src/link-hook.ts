@@ -6,7 +6,7 @@ import {
   type TFile,
 } from "obsidian";
 import type { HeadingJumpFixSettings } from "./settings";
-import { resolveHeadingByText } from "./heading-resolver";
+import { resolveBlockById, resolveHeadingByText } from "./heading-resolver";
 import { jumpOptionsFromSettings, reliableJump } from "./jump-engine";
 import { debugLog } from "./debug";
 
@@ -80,30 +80,31 @@ export class LinkHook {
     if (inPane && !settings.linkPaneFix) return;
     if (!inPane && !settings.bodyLinkFix) return;
 
-    const href = findInternalHeadingHref(target);
+    const href = findInternalJumpHref(target);
     if (!href) return;
 
     const parsed = parseLinktext(href);
-    const headingText = headingFromSubpath(parsed.subpath);
-    if (!headingText) return;
+    const jump = parseJumpSubpath(parsed.subpath);
+    if (!jump) return;
 
     const sourcePath = this.app.workspace.getActiveFile()?.path ?? "";
     this.clearPending();
     debugLog(settings.debugLog, inPane ? "link pane click" : "wikilink click", {
       href,
       path: parsed.path,
-      headingText,
+      kind: jump.kind,
+      target: jump.text,
       delayMs: settings.retryDelayMs,
     });
     this.pendingTimer = window.setTimeout(() => {
       this.pendingTimer = null;
-      void this.performJump(parsed.path, headingText, sourcePath);
+      void this.performJump(parsed.path, jump, sourcePath);
     }, settings.retryDelayMs);
   }
 
   private async performJump(
     linkpath: string,
-    headingText: string,
+    jump: JumpSubpath,
     sourcePath: string
   ): Promise<void> {
     const settings = this.getSettings();
@@ -114,15 +115,20 @@ export class LinkHook {
     const editor = markdownView?.editor;
     if (!editor) return;
 
-    const resolved = resolveHeadingByText(this.app, file, headingText);
+    const resolved =
+      jump.kind === "block"
+        ? resolveBlockById(this.app, file, jump.text)
+        : resolveHeadingByText(this.app, file, jump.text);
     await reliableJump(editor, resolved, jumpOptionsFromSettings(settings));
   }
 }
 
-function headingFromSubpath(subpath: string): string | null {
-  if (!subpath || subpath.startsWith("#^")) return null;
-  const raw = subpath.startsWith("#") ? subpath.slice(1) : subpath;
-  if (!raw) return null;
+interface JumpSubpath {
+  kind: "heading" | "block";
+  text: string;
+}
+
+function decodeSubpath(raw: string): string {
   try {
     return decodeURIComponent(raw).trim();
   } catch {
@@ -130,18 +136,31 @@ function headingFromSubpath(subpath: string): string | null {
   }
 }
 
-function findInternalHeadingHref(start: Element): string | null {
+function parseJumpSubpath(subpath: string): JumpSubpath | null {
+  if (!subpath) return null;
+  const body = subpath.startsWith("#") ? subpath.slice(1) : subpath;
+  if (!body) return null;
+  if (body.startsWith("^")) {
+    const id = decodeSubpath(body.slice(1));
+    if (!id) return null;
+    return { kind: "block", text: id };
+  }
+  const text = decodeSubpath(body);
+  if (!text) return null;
+  return { kind: "heading", text };
+}
+
+function findInternalJumpHref(start: Element): string | null {
   let cur: Element | null = start;
   for (let i = 0; i < 10 && cur; i++) {
     const dataHref = cur.getAttribute("data-href");
-    if (dataHref && dataHref.includes("#") && !dataHref.includes("#^")) {
+    if (dataHref && dataHref.includes("#")) {
       return dataHref;
     }
     const href = cur.getAttribute("href");
     if (
       href &&
       href.includes("#") &&
-      !href.includes("#^") &&
       (cur.classList.contains("internal-link") ||
         cur.getAttribute("data-href") !== null)
     ) {

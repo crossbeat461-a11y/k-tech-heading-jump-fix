@@ -10,7 +10,7 @@
 
 ![Heading Jump Fix screenshot](./images/screenshot.png)
 
-K-Tech Studio plugin that **auto-corrects scroll position** after heading jumps from the Outline, wikilinks, or link panes.
+K-Tech Studio plugin that **auto-corrects scroll position** after heading jumps from the Outline, wikilinks, block references, or link panes.
 
 ---
 
@@ -26,7 +26,8 @@ In Live Preview, clicking a heading in the Outline (or a `[[note#heading]]` link
 
 - Outline sidebar: one click should scroll to the heading
 - In-note `[[wikilink#heading]]` clicks
-- Heading clicks in Outgoing links / Backlinks
+- In-note `[[note#^block]]` clicks
+- Heading or block clicks in Outgoing links / Backlinks
 - Duplicate headings: disambiguated by order in the outline
 - Theme `scroll-behavior: smooth` missing the target
 - Configurable retry delay, retry count (with backoff), and scroll-to-center
@@ -35,14 +36,13 @@ In Live Preview, clicking a heading in the Outline (or a `[[note#heading]]` link
 
 - General UI sluggishness (Electron/GPU, too many plugins)
 - Dropbox or sync I/O delay
-- Block references (`#^block`)
 - Reading view heading clicks that are not links
 
 ### How to use
 
 1. Install **Heading Jump Fix** from Community plugins and enable it
 2. Open a long note
-3. Click a heading in **Outline**, a `[[note#heading]]` link, or a heading in the link panes
+3. Click a heading in **Outline**, a `[[note#heading]]` or `[[note#^block]]` link, or a heading in the link panes
 
 **Settings** (plugin options):
 
@@ -50,8 +50,8 @@ In Live Preview, clicking a heading in the Outline (or a `[[note#heading]]` link
 |---------|---------|-------------|
 | Enable plugin | ON | Master switch |
 | Outline click fix | ON | Retry scroll after outline clicks |
-| Wikilink click fix | ON | Retry scroll after `[[wikilink#heading]]` clicks |
-| Link pane click fix | ON | Retry scroll after Outgoing links / Backlinks |
+| Wikilink click fix | ON | Retry scroll after `[[wikilink#heading]]` and `[[note#^block]]` clicks |
+| Link pane click fix | ON | Retry scroll after Outgoing links / Backlinks (headings and blocks) |
 | Retry delay (ms) | 250 | Wait before correction |
 | Retry count | 1 | Extra scroll passes (later passes wait longer) |
 | Scroll heading to center | ON | Center the heading in the editor |
@@ -89,7 +89,8 @@ Live Preview でアウトラインや `[[ノート#見出し]]` をクリック�
 
 - アウトライン 1 クリックでの見出しジャンプ
 - 本文の `[[wikilink#見出し]]` クリック
-- アウトゴーイングリンク / バックリンクの見出しクリック
+- 本文の `[[ノート#^ブロック]]` クリック
+- アウトゴーイングリンク / バックリンクの見出し・ブロッククリック
 - 同名見出し（アウトライン上の順序で区別）
 - テーマのスムーズスクロールで見出しを外す問題
 - リトライ遅延・回数（backoff）・中央揃えの設定
@@ -98,14 +99,13 @@ Live Preview でアウトラインや `[[ノート#見出し]]` をクリック�
 
 - 全体の UI ラグ
 - Dropbox 同期遅延
-- ブロック参照（`#^`）
 - リンクではないリーディングビューの見出しクリック
 
 ### 使い方
 
 1. コミュニティプラグインから **Heading Jump Fix** を入れて有効にする
 2. 長いノートを開く
-3. **アウトライン**、`[[ノート#見出し]]`、またはリンクペインから見出しをクリックする
+3. **アウトライン**、`[[ノート#見出し]]` / `[[ノート#^ブロック]]`、またはリンクペインからジャンプする
 
 **設定**（プラグイン設定）:
 
@@ -113,8 +113,8 @@ Live Preview でアウトラインや `[[ノート#見出し]]` をクリック�
 |------|--------|------|
 | プラグインを有効化 | ON | 全体のスイッチ |
 | アウトラインクリック補正 | ON | アウトラインクリック後にスクロールを再試行 |
-| Wikilink クリック補正 | ON | `[[wikilink#見出し]]` のあとスクロールを再試行 |
-| リンクペイン補正 | ON | アウトゴーイング / バックリンクの見出しクリック |
+| Wikilink クリック補正 | ON | `[[wikilink#見出し]]` と `[[ノート#^ブロック]]` のあとスクロールを再試行 |
+| リンクペイン補正 | ON | アウトゴーイング / バックリンクの見出し・ブロッククリック |
 | リトライ遅延 (ms) | 250 | 補正までの待ち時間 |
 | リトライ回数 | 1 | 追加のスクロール回数（後の回は待ち時間が増える） |
 | 見出しを中央へ | ON | エディタの中央付近に見出しを置く |

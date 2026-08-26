@@ -13,7 +13,7 @@ Paste these values in the developer dashboard.
 ## Short description
 
 ```
-Auto-correct scroll after outline, wikilink, and heading clicks so one click is enough.
+Auto-correct scroll after outline, wikilink, heading, and block-reference clicks so one click is enough.
 ```
 
 The **Overview** tab on the plugin page is the GitHub `README.md` (not this listing block). After changing the README, wait for the directory to refresh, or re-save the listing in the developer dashboard.
@@ -21,11 +21,11 @@ The **Overview** tab on the plugin page is the GitHub `README.md` (not this list
 ## Longer description (if available)
 
 ```
-Heading Jump Fix helps when clicking a heading in the Outline sidebar, a [[wikilink#heading]] in the note, or a heading in Outgoing links / Backlinks moves the cursor but does not scroll the editor into view — especially on long notes or right after opening the app.
+Heading Jump Fix helps when clicking a heading in the Outline sidebar, a [[wikilink#heading]] in the note, a [[note#^block]] block reference, or a heading in Outgoing links / Backlinks moves the cursor but does not scroll the editor into view — especially on long notes or right after opening the app.
 
-After each jump, the plugin waits briefly, then scrolls to the correct heading line using metadata from your vault. It checks that the heading is on screen and retries with backoff if needed. Duplicate headings are matched by order in the outline. Retry delay, retry count, scroll-to-center, theme scroll-behavior override, and an optional debug log are configurable.
+After each jump, the plugin waits briefly, then scrolls to the correct heading or block line using metadata from your vault. It checks that the target is on screen and retries with backoff if needed. Duplicate headings are matched by order in the outline. Retry delay, retry count, scroll-to-center, theme scroll-behavior override, and an optional debug log are configurable.
 
-Fully offline — no network requests. Does not fix general UI lag or sync delay. Block references (#^) are not corrected.
+Fully offline — no network requests. Does not fix general UI lag or sync delay.
 
 Support development via Buy Me a Coffee (link in plugin settings and manifest).
 ```
