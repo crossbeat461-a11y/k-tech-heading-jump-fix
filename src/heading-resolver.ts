@@ -9,7 +9,8 @@ export interface JumpTarget {
 
 export interface ResolvedHeading {
   line: number;
-  heading: HeadingCache;
+  heading?: HeadingCache;
+  label?: string;
 }
 
 export function normalizeHeadingText(text: string): string {
@@ -77,6 +78,32 @@ export function findHeadingAtLine(
 
   if (!best) return null;
   return { line: best.position.start.line, heading: best };
+}
+
+export function resolveBlockById(
+  app: App,
+  file: TFile,
+  blockId: string
+): ResolvedHeading | null {
+  const cache = app.metadataCache.getFileCache(file);
+  const blocks = cache?.blocks;
+  if (!blocks) return null;
+
+  const raw = blockId.replace(/^\^/, "").trim();
+  if (!raw) return null;
+  const lower = raw.toLowerCase();
+  const block =
+    blocks[lower] ??
+    blocks[raw] ??
+    Object.values(blocks).find(
+      (b) => b.id === raw || b.id.toLowerCase() === lower
+    );
+  if (!block) return null;
+
+  return {
+    line: block.position.start.line,
+    label: "^" + block.id,
+  };
 }
 
 export function countPriorMatchingHeadings(

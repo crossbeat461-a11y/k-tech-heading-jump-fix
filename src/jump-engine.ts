@@ -132,7 +132,7 @@ export async function reliableJump(
     }
     debugLog(log, "scroll pass", {
       line,
-      heading: resolved.heading.heading,
+      heading: resolved.heading?.heading ?? resolved.label ?? "",
       pass: i + 1,
       of: passes,
       center,

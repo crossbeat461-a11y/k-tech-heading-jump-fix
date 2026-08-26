@@ -110,7 +110,7 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
       },
       {
         name: "Wikilink click fix",
-        desc: "Retry scroll after in-note [[wikilink#heading]] clicks.",
+        desc: "Retry scroll after in-note [[wikilink#heading]] and [[note#^block]] clicks.",
         control: {
           type: "toggle",
           key: "bodyLinkFix",
@@ -119,7 +119,7 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
       },
       {
         name: "Link pane click fix",
-        desc: "Retry scroll after heading clicks in Outgoing links / Backlinks.",
+        desc: "Retry scroll after heading or block-reference clicks in Outgoing links / Backlinks.",
         control: {
           type: "toggle",
           key: "linkPaneFix",
@@ -211,13 +211,17 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian2.Setting(containerEl).setName("Wikilink click fix").setDesc("Retry scroll after in-note [[wikilink#heading]] clicks.").addToggle(
+    new import_obsidian2.Setting(containerEl).setName("Wikilink click fix").setDesc(
+      "Retry scroll after in-note [[wikilink#heading]] and [[note#^block]] clicks."
+    ).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.bodyLinkFix).onChange(async (value) => {
         this.plugin.settings.bodyLinkFix = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian2.Setting(containerEl).setName("Link pane click fix").setDesc("Retry scroll after heading clicks in Outgoing links / Backlinks.").addToggle(
+    new import_obsidian2.Setting(containerEl).setName("Link pane click fix").setDesc(
+      "Retry scroll after heading or block-reference clicks in Outgoing links / Backlinks."
+    ).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.linkPaneFix).onChange(async (value) => {
         this.plugin.settings.linkPaneFix = value;
         await this.plugin.saveSettings();
@@ -313,6 +317,23 @@ function findHeadingAtLine(app, file, line) {
   }
   if (!best) return null;
   return { line: best.position.start.line, heading: best };
+}
+function resolveBlockById(app, file, blockId) {
+  var _a, _b;
+  const cache = app.metadataCache.getFileCache(file);
+  const blocks = cache == null ? void 0 : cache.blocks;
+  if (!blocks) return null;
+  const raw = blockId.replace(/^\^/, "").trim();
+  if (!raw) return null;
+  const lower = raw.toLowerCase();
+  const block = (_b = (_a = blocks[lower]) != null ? _a : blocks[raw]) != null ? _b : Object.values(blocks).find(
+    (b) => b.id === raw || b.id.toLowerCase() === lower
+  );
+  if (!block) return null;
+  return {
+    line: block.position.start.line,
+    label: "^" + block.id
+  };
 }
 function countPriorMatchingHeadings(item, headingText, level, outlineRoot) {
   const items = Array.from(outlineRoot.querySelectorAll(".tree-item"));
@@ -418,6 +439,7 @@ function backoffMs(baseMs, extraPassIndex) {
   return baseMs * Math.pow(2, extraPassIndex);
 }
 async function reliableJump(editor, resolved, options) {
+  var _a, _b, _c;
   const log = !!options.debugLog;
   const center = options.scrollToCenter !== false;
   if (!editor) {
@@ -449,7 +471,7 @@ async function reliableJump(editor, resolved, options) {
     }
     debugLog(log, "scroll pass", {
       line,
-      heading: resolved.heading.heading,
+      heading: (_c = (_b = (_a = resolved.heading) == null ? void 0 : _a.heading) != null ? _b : resolved.label) != null ? _c : "",
       pass: i + 1,
       of: passes,
       center
@@ -642,54 +664,65 @@ var LinkHook = class {
     const inPane = !!target.closest(LINK_PANE_LEAF);
     if (inPane && !settings.linkPaneFix) return;
     if (!inPane && !settings.bodyLinkFix) return;
-    const href = findInternalHeadingHref(target);
+    const href = findInternalJumpHref(target);
     if (!href) return;
     const parsed = (0, import_obsidian4.parseLinktext)(href);
-    const headingText = headingFromSubpath(parsed.subpath);
-    if (!headingText) return;
+    const jump = parseJumpSubpath(parsed.subpath);
+    if (!jump) return;
     const sourcePath = (_b = (_a = this.app.workspace.getActiveFile()) == null ? void 0 : _a.path) != null ? _b : "";
     this.clearPending();
     debugLog(settings.debugLog, inPane ? "link pane click" : "wikilink click", {
       href,
       path: parsed.path,
-      headingText,
+      kind: jump.kind,
+      target: jump.text,
       delayMs: settings.retryDelayMs
     });
     this.pendingTimer = window.setTimeout(() => {
       this.pendingTimer = null;
-      void this.performJump(parsed.path, headingText, sourcePath);
+      void this.performJump(parsed.path, jump, sourcePath);
     }, settings.retryDelayMs);
   }
-  async performJump(linkpath, headingText, sourcePath) {
+  async performJump(linkpath, jump, sourcePath) {
     const settings = this.getSettings();
     const file = resolveDestFile(this.app, linkpath, sourcePath);
     if (!file) return;
     const markdownView = findMarkdownView(this.app, file);
     const editor = markdownView == null ? void 0 : markdownView.editor;
     if (!editor) return;
-    const resolved = resolveHeadingByText(this.app, file, headingText);
+    const resolved = jump.kind === "block" ? resolveBlockById(this.app, file, jump.text) : resolveHeadingByText(this.app, file, jump.text);
     await reliableJump(editor, resolved, jumpOptionsFromSettings(settings));
   }
 };
-function headingFromSubpath(subpath) {
-  if (!subpath || subpath.startsWith("#^")) return null;
-  const raw = subpath.startsWith("#") ? subpath.slice(1) : subpath;
-  if (!raw) return null;
+function decodeSubpath(raw) {
   try {
     return decodeURIComponent(raw).trim();
   } catch (e) {
     return raw.trim();
   }
 }
-function findInternalHeadingHref(start) {
+function parseJumpSubpath(subpath) {
+  if (!subpath) return null;
+  const body = subpath.startsWith("#") ? subpath.slice(1) : subpath;
+  if (!body) return null;
+  if (body.startsWith("^")) {
+    const id = decodeSubpath(body.slice(1));
+    if (!id) return null;
+    return { kind: "block", text: id };
+  }
+  const text = decodeSubpath(body);
+  if (!text) return null;
+  return { kind: "heading", text };
+}
+function findInternalJumpHref(start) {
   let cur = start;
   for (let i = 0; i < 10 && cur; i++) {
     const dataHref = cur.getAttribute("data-href");
-    if (dataHref && dataHref.includes("#") && !dataHref.includes("#^")) {
+    if (dataHref && dataHref.includes("#")) {
       return dataHref;
     }
     const href = cur.getAttribute("href");
-    if (href && href.includes("#") && !href.includes("#^") && (cur.classList.contains("internal-link") || cur.getAttribute("data-href") !== null)) {
+    if (href && href.includes("#") && (cur.classList.contains("internal-link") || cur.getAttribute("data-href") !== null)) {
       return href;
     }
     cur = cur.parentElement;

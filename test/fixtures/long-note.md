@@ -6,6 +6,8 @@ Long note with many sections and an embed. Copy into your vault for manual testi
 
 Intro paragraph with filler text. Repeat this line many times in real tests by duplicating sections below.
 
+Jump to a block: [[#^jump-target]]
+
 ## Section A
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -70,5 +72,7 @@ Nested heading.
 Another nested heading.
 
 ## Section E
+
+This paragraph is the block jump target. ^jump-target
 
 End of test note.
