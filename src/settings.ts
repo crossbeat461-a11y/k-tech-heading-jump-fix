@@ -118,15 +118,6 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
         },
       },
       {
-        name: "Debug log",
-        desc: "Write jump details to the developer console (no network).",
-        control: {
-          type: "toggle",
-          key: "debugLog",
-          defaultValue: DEFAULT_SETTINGS.debugLog,
-        },
-      },
-      {
         type: "group",
         heading: "Support",
         items: [
@@ -263,18 +254,6 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.overrideThemeScroll)
           .onChange(async (value) => {
             this.plugin.settings.overrideThemeScroll = value;
-            await this.plugin.saveSettings();
-          })
-      );
-
-    new Setting(containerEl)
-      .setName("Debug log")
-      .setDesc("Write jump details to the developer console (no network).")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.debugLog)
-          .onChange(async (value) => {
-            this.plugin.settings.debugLog = value;
             await this.plugin.saveSettings();
           })
       );

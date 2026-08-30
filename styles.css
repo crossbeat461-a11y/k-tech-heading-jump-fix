@@ -1,7 +1,9 @@
 /* Override theme CSS that sets scroll-behavior: smooth.
-   Smooth scrolling can leave the heading off-screen after outline jumps. */
-body.heading-jump-fix-instant-scroll .markdown-source-view.mod-cm6 .cm-scroller,
-body.heading-jump-fix-instant-scroll .markdown-preview-view,
-body.heading-jump-fix-instant-scroll .markdown-reading-view .markdown-preview-view {
-  scroll-behavior: auto !important;
+   Smooth scrolling can leave the heading off-screen after outline jumps.
+   No !important — extra type + class selectors beat typical theme rules. */
+html body.heading-jump-fix-instant-scroll,
+html body.heading-jump-fix-instant-scroll div.markdown-source-view.mod-cm6 div.cm-scroller,
+html body.heading-jump-fix-instant-scroll div.markdown-preview-view,
+html body.heading-jump-fix-instant-scroll div.markdown-reading-view div.markdown-preview-view {
+  scroll-behavior: auto;
 }

@@ -165,15 +165,6 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
         }
       },
       {
-        name: "Debug log",
-        desc: "Write jump details to the developer console (no network).",
-        control: {
-          type: "toggle",
-          key: "debugLog",
-          defaultValue: DEFAULT_SETTINGS.debugLog
-        }
-      },
-      {
         type: "group",
         heading: "Support",
         items: [
@@ -259,12 +250,6 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian2.Setting(containerEl).setName("Debug log").setDesc("Write jump details to the developer console (no network).").addToggle(
-      (toggle) => toggle.setValue(this.plugin.settings.debugLog).onChange(async (value) => {
-        this.plugin.settings.debugLog = value;
-        await this.plugin.saveSettings();
-      })
-    );
     new import_obsidian2.Setting(containerEl).setName("Support").setHeading();
     new import_obsidian2.Setting(containerEl).setName("Buy Me a Coffee").setDesc("Support K-Tech Studio development.").addButton(
       (button) => button.setButtonText("Buy Me a Coffee").onClick(() => {
@@ -319,21 +304,30 @@ function findHeadingAtLine(app, file, line) {
   return { line: best.position.start.line, heading: best };
 }
 function resolveBlockById(app, file, blockId) {
-  var _a, _b;
   const cache = app.metadataCache.getFileCache(file);
   const blocks = cache == null ? void 0 : cache.blocks;
   if (!blocks) return null;
   const raw = blockId.replace(/^\^/, "").trim();
   if (!raw) return null;
   const lower = raw.toLowerCase();
-  const block = (_b = (_a = blocks[lower]) != null ? _a : blocks[raw]) != null ? _b : Object.values(blocks).find(
-    (b) => b.id === raw || b.id.toLowerCase() === lower
-  );
+  const block = findBlockCache(blocks, raw, lower);
   if (!block) return null;
   return {
     line: block.position.start.line,
     label: "^" + block.id
   };
+}
+function findBlockCache(blocks, raw, lower) {
+  var _a;
+  const keyed = (_a = blocks[lower]) != null ? _a : blocks[raw];
+  if (keyed) return keyed;
+  for (const key of Object.keys(blocks)) {
+    const entry = blocks[key];
+    if (!entry) continue;
+    const id = entry.id;
+    if (id === raw || id.toLowerCase() === lower) return entry;
+  }
+  return void 0;
 }
 function countPriorMatchingHeadings(item, headingText, level, outlineRoot) {
   const items = Array.from(outlineRoot.querySelectorAll(".tree-item"));
@@ -378,14 +372,7 @@ function getOutlineItemText(item) {
 }
 
 // src/debug.ts
-var PREFIX = "[Heading Jump Fix]";
-function debugLog(enabled, message, extra) {
-  if (!enabled) return;
-  if (extra !== void 0) {
-    console.log(PREFIX, message, extra);
-  } else {
-    console.log(PREFIX, message);
-  }
+function debugLog(_enabled, _message, _extra) {
 }
 
 // src/jump-engine.ts

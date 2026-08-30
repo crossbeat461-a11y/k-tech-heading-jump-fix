@@ -10,7 +10,7 @@
 | Name | Heading Jump Fix |
 | Author | K-Tech Studio |
 | Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` |
-| Version | 1.1.0 (stable) |
+| Version | 1.1.1 (stable) |
 
 ## README (community listing)
 
@@ -50,8 +50,8 @@ src/jump-engine.ts       scroll + rAF retry + viewport verify + backoff
 src/outline-hook.ts      Outline click capture (popout-safe)
 src/link-hook.ts         Wikilink + outgoing/backlink pane clicks
 src/theme-scroll.ts      Apply instant-scroll body class (popout-safe)
-src/debug.ts             Console debug log (opt-in)
-styles.css               Override theme scroll-behavior: smooth
+src/debug.ts             Debug hook (no console; community review)
+styles.css               Override theme scroll-behavior: smooth (no !important)
 ```
 
 ## Phase roadmap
