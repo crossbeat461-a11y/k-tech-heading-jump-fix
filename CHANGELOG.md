@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1 — 2026-08-31
+
+### Fixed
+
+- Community review: no `console.log` (debug toggle removed from settings)
+- Community review: type-safe block-id lookup (no `any` access)
+- Community review: instant-scroll CSS without `!important`
+
 ## 1.1.0 — 2026-08-26
 
 ### Added

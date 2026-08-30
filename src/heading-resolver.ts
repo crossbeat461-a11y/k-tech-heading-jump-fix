@@ -1,4 +1,4 @@
-import type { App, HeadingCache, TFile } from "obsidian";
+import type { App, BlockCache, HeadingCache, TFile } from "obsidian";
 
 export interface JumpTarget {
   file: TFile;
@@ -92,18 +92,29 @@ export function resolveBlockById(
   const raw = blockId.replace(/^\^/, "").trim();
   if (!raw) return null;
   const lower = raw.toLowerCase();
-  const block =
-    blocks[lower] ??
-    blocks[raw] ??
-    Object.values(blocks).find(
-      (b) => b.id === raw || b.id.toLowerCase() === lower
-    );
+  const block = findBlockCache(blocks, raw, lower);
   if (!block) return null;
 
   return {
     line: block.position.start.line,
     label: "^" + block.id,
   };
+}
+
+function findBlockCache(
+  blocks: Record<string, BlockCache>,
+  raw: string,
+  lower: string
+): BlockCache | undefined {
+  const keyed = blocks[lower] ?? blocks[raw];
+  if (keyed) return keyed;
+  for (const key of Object.keys(blocks)) {
+    const entry = blocks[key];
+    if (!entry) continue;
+    const id = entry.id;
+    if (id === raw || id.toLowerCase() === lower) return entry;
+  }
+  return undefined;
 }
 
 export function countPriorMatchingHeadings(
