@@ -36,6 +36,9 @@ var FUNDING_URL = "https://buymeacoffee.com/k_tech_studio";
 var PLUGIN_NAME = "Heading Jump Fix";
 
 // src/funding.ts
+function isJa() {
+  return String((0, import_obsidian.getLanguage)() || "").toLowerCase().startsWith("ja");
+}
 var FundingModal = class extends import_obsidian.Modal {
   constructor(app, kind, version) {
     super(app);
@@ -45,10 +48,10 @@ var FundingModal = class extends import_obsidian.Modal {
   onOpen() {
     const { contentEl, titleEl } = this;
     titleEl.setText(PLUGIN_NAME);
-    const heading = this.kind === "install" ? "Thanks for installing!" : `Updated to ${this.version}`;
+    const heading = isJa() ? this.kind === "install" ? "\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3042\u308A\u304C\u3068\u3046\u3054\u3056\u3044\u307E\u3059" : `${this.version} \u3078\u66F4\u65B0\u3055\u308C\u307E\u3057\u305F` : this.kind === "install" ? "Thanks for installing!" : `Updated to ${this.version}`;
     contentEl.createEl("h3", { text: heading });
     contentEl.createEl("p", {
-      text: this.kind === "install" ? "Heading Jump Fix auto-corrects scroll after outline clicks. If it saves you a second click, consider supporting development." : "Thanks for updating. New versions keep outline jumps reliable. If this plugin helps your workflow, consider supporting development."
+      text: isJa() ? this.kind === "install" ? "\u30A2\u30A6\u30C8\u30E9\u30A4\u30F3\u306E\u30AF\u30EA\u30C3\u30AF\u5F8C\u306B\u30B9\u30AF\u30ED\u30FC\u30EB\u4F4D\u7F6E\u3092\u76F4\u3057\u307E\u3059\u3002\u30B5\u30DD\u30FC\u30C8\u304A\u9858\u3044\u3057\u307E\u3059\u3002\u958B\u767A\u306E\u52B1\u307F\u306B\u306A\u308A\u307E\u3059\u3002" : "\u65B0\u3057\u3044\u7248\u306B\u66F4\u65B0\u3055\u308C\u307E\u3057\u305F\u3002\u30B5\u30DD\u30FC\u30C8\u304A\u9858\u3044\u3057\u307E\u3059\u3002\u958B\u767A\u306E\u52B1\u307F\u306B\u306A\u308A\u307E\u3059\u3002" : this.kind === "install" ? "Heading Jump Fix auto-corrects scroll after outline clicks. If it saves you a second click, consider supporting development." : "Thanks for updating. New versions keep outline jumps reliable. If this plugin helps your workflow, consider supporting development."
     });
     const actions = contentEl.createDiv({ cls: "modal-button-container" });
     const coffeeBtn = actions.createEl("button", {
