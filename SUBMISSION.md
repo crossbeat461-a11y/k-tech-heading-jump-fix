@@ -10,7 +10,8 @@ Use **release `0.1.0` or later** (GitHub Actions + artifact attestations).
 4. Commit and push to `main`.
 5. Create and push tag: `git tag 0.1.0 && git push origin 0.1.0`
 6. Wait for [Release workflow](https://github.com/crossbeat461-a11y/k-tech-heading-jump-fix/actions) to finish.
-7. Update listing from `LISTING.md` on [community.obsidian.md](https://community.obsidian.md).
+7. The **agent** pastes `LISTING.md` on [community.obsidian.md](https://community.obsidian.md) Edit listing. The **human** only finishes Obsidian pending for the new version.
+8. If listing paste cannot be completed, stop and report that blocked step. Do not leave it as remaining work for the human.
 
 ## Expected scan results
 
