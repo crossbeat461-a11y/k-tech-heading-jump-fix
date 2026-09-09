@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1 — 2026-09-09
+
+### Fixed
+
+- Community review: declare `minAppVersion` 1.8.7 for `getLanguage()`
+- Community review: cross-window `instanceOf(win.HTMLElement)` (no extra type assertion)
+
 ## 1.2.0 — 2026-09-09
 
 ### Added

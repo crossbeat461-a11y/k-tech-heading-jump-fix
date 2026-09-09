@@ -7,7 +7,7 @@ Paste these values in the developer dashboard.
 - **`manifest.json` → `description` must NOT contain the word `Obsidian`.**
 - **`authorUrl`** must be a GitHub **profile** URL, not the plugin repository.
 - **`fundingUrl`** is set to Buy Me a Coffee (shows in plugin browser).
-- **GitHub Release title** must include the version (e.g. `Heading Jump Fix 1.2.0`). CI sets this on tag push.
+- **GitHub Release title** must include the version (e.g. `Heading Jump Fix 1.2.1`). CI sets this on tag push.
 - **Release assets** (`main.js`, `manifest.json`, `styles.css`) are published via GitHub Actions with **artifact attestations**.
 - Short description: **200 characters or fewer**. Longer description: **1000 characters or fewer** (spaces included).
 

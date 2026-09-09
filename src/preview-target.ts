@@ -37,17 +37,8 @@ export function previewHeadingText(el: HTMLElement): string {
 
 function asHTMLElement(node: Element | null): HTMLElement | null {
   if (!node) return null;
-  const withInstance = node as Element & {
-    instanceOf?: (type: typeof HTMLElement) => boolean;
-  };
-  if (
-    typeof withInstance.instanceOf === "function" &&
-    withInstance.instanceOf(HTMLElement)
-  ) {
-    return node as HTMLElement;
-  }
   const win = node.ownerDocument.defaultView;
-  if (win && node instanceof win.HTMLElement) return node as HTMLElement;
+  if (win && node.instanceOf(win.HTMLElement)) return node;
   return null;
 }
 

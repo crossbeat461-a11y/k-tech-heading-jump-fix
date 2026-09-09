@@ -532,12 +532,8 @@ function previewHeadingText(el) {
 }
 function asHTMLElement(node) {
   if (!node) return null;
-  const withInstance = node;
-  if (typeof withInstance.instanceOf === "function" && withInstance.instanceOf(HTMLElement)) {
-    return node;
-  }
   const win = node.ownerDocument.defaultView;
-  if (win && node instanceof win.HTMLElement) return node;
+  if (win && node.instanceOf(win.HTMLElement)) return node;
   return null;
 }
 function findPreviewHeadingElement(preview, resolved, occurrenceIndex) {
