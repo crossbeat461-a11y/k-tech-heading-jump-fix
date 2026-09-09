@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin, type App, type TFile } from "obsidian";
+import { Plugin, type App, type TFile } from "obsidian";
 import type { HeadingJumpFixSettings } from "./settings";
 import {
   countPriorMatchingHeadings,
@@ -6,8 +6,8 @@ import {
   getOutlineItemText,
   resolveHeading,
 } from "./heading-resolver";
-import { jumpOptionsFromSettings, reliableJump } from "./jump-engine";
 import { debugLog } from "./debug";
+import { jumpResolvedInOpenViews } from "./view-jump";
 
 export const OUTLINE_SELECTORS = {
   leaf: '.workspace-leaf-content[data-type="outline"]',
@@ -100,9 +100,6 @@ export class OutlineHook {
     const file = this.app.workspace.getActiveFile();
     if (!file) return;
 
-    const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!markdownView?.editor) return;
-
     this.clearPending();
     debugLog(settings.debugLog, "outline click", {
       headingText,
@@ -124,21 +121,12 @@ export class OutlineHook {
     occurrenceIndex: number
   ): Promise<void> {
     const settings = this.getSettings();
-    const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    const editor = markdownView?.editor;
-    if (!editor) return;
-
     const resolved = resolveHeading(this.app, {
       file,
       headingText,
       level,
       occurrenceIndex,
     });
-
-    await reliableJump(
-      editor,
-      resolved,
-      jumpOptionsFromSettings(settings)
-    );
+    await jumpResolvedInOpenViews(this.app, file, resolved, settings);
   }
 }

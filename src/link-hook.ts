@@ -1,14 +1,8 @@
-import {
-  MarkdownView,
-  parseLinktext,
-  Plugin,
-  type App,
-  type TFile,
-} from "obsidian";
+import { parseLinktext, Plugin, type App, type TFile } from "obsidian";
 import type { HeadingJumpFixSettings } from "./settings";
 import { resolveBlockById, resolveHeadingByText } from "./heading-resolver";
-import { jumpOptionsFromSettings, reliableJump } from "./jump-engine";
 import { debugLog } from "./debug";
+import { jumpResolvedInOpenViews } from "./view-jump";
 
 const LINK_PANE_LEAF =
   '.workspace-leaf-content[data-type="outgoing-link"], .workspace-leaf-content[data-type="backlink"]';
@@ -111,15 +105,11 @@ export class LinkHook {
     const file = resolveDestFile(this.app, linkpath, sourcePath);
     if (!file) return;
 
-    const markdownView = findMarkdownView(this.app, file);
-    const editor = markdownView?.editor;
-    if (!editor) return;
-
     const resolved =
       jump.kind === "block"
         ? resolveBlockById(this.app, file, jump.text)
         : resolveHeadingByText(this.app, file, jump.text);
-    await reliableJump(editor, resolved, jumpOptionsFromSettings(settings));
+    await jumpResolvedInOpenViews(this.app, file, resolved, settings);
   }
 }
 
@@ -181,17 +171,4 @@ function resolveDestFile(
     app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath) ??
     app.workspace.getActiveFile()
   );
-}
-
-function findMarkdownView(app: App, file: TFile): MarkdownView | null {
-  const leaves = app.workspace.getLeavesOfType("markdown");
-  for (const leaf of leaves) {
-    const view = leaf.view;
-    if (view instanceof MarkdownView && view.file?.path === file.path) {
-      return view;
-    }
-  }
-  const active = app.workspace.getActiveViewOfType(MarkdownView);
-  if (active?.file?.path === file.path) return active;
-  return active;
 }

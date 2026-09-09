@@ -1,6 +1,6 @@
 # HANDOFF — Heading Jump Fix
 
-<!-- updated: 2026-08-26 -->
+<!-- updated: 2026-09-09 -->
 
 ## Product
 
@@ -10,7 +10,7 @@
 | Name | Heading Jump Fix |
 | Author | K-Tech Studio |
 | Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` |
-| Version | 1.1.1 (stable) |
+| Version | 1.2.0 (stable) |
 
 ## README (community listing)
 
@@ -47,6 +47,8 @@ src/main.ts              Plugin entry, settings, command, theme CSS class
 src/settings.ts          Settings + tab UI
 src/heading-resolver.ts  metadataCache → line; outline DOM helpers; block ids
 src/jump-engine.ts       scroll + rAF retry + viewport verify + backoff
+src/view-jump.ts         Open markdown views (editor + Reading)
+src/preview-target.ts    Heading / block DOM in Reading view
 src/outline-hook.ts      Outline click capture (popout-safe)
 src/link-hook.ts         Wikilink + outgoing/backlink pane clicks
 src/theme-scroll.ts      Apply instant-scroll body class (popout-safe)
@@ -63,6 +65,13 @@ styles.css               Override theme scroll-behavior: smooth (no !important)
 | 3 | 0.3.0 | Theme scroll-behavior CSS, debug log | **Done** |
 | 4 | 1.0.0 | Stabilize, community listing decision | **Done** |
 | 5 | 1.1.0 | Block reference (`#^`) jump correction | **Done** |
+| 6 | 1.2.0 | Reading view landing (outline / heading links; split panes) | **Done** |
+| 7 | — | Search result jumps | Waiting |
+| 8 | — | Keyboard (follow link; outline confirm) | Waiting |
+| 9 | — | Unfold folded heading after jump | Waiting |
+
+Policy: one remaining entry per release. Details: `ROADMAP.md`.
+Do not make non-link Reading-view headings clickable.
 
 ## Test
 
@@ -77,10 +86,14 @@ Checklist (manual in Obsidian):
 - [ ] `[[note#^block]]` in Live Preview
 - [ ] Heading click in Outgoing links / Backlinks
 - [ ] Block-reference click in Outgoing links / Backlinks
+- [ ] `[[note#heading]]` in Reading view
+- [ ] Outline click while the note is in Reading view
+- [ ] Split: editor + Reading, heading link lands in both
 - [ ] Plugin disabled → no hook
 - [ ] Coexists with TableCSV, Tasks, Dataview
 - [ ] Theme with `scroll-behavior: smooth` still lands on the heading (override ON)
-- [ ] Debug log ON → `[Heading Jump Fix]` lines in developer console
+
+Debug log was removed in 1.1.1 (community review).
 
 ## Release
 

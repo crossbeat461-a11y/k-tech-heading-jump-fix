@@ -12,6 +12,7 @@ export interface HeadingJumpFixSettings {
   outlineFix: boolean;
   bodyLinkFix: boolean;
   linkPaneFix: boolean;
+  readingViewFix: boolean;
   retryDelayMs: number;
   retryCount: number;
   scrollToCenter: boolean;
@@ -26,6 +27,7 @@ export const DEFAULT_SETTINGS: HeadingJumpFixSettings = {
   outlineFix: true,
   bodyLinkFix: true,
   linkPaneFix: true,
+  readingViewFix: true,
   retryDelayMs: 250,
   retryCount: 1,
   scrollToCenter: true,
@@ -77,6 +79,15 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
           type: "toggle",
           key: "linkPaneFix",
           defaultValue: DEFAULT_SETTINGS.linkPaneFix,
+        },
+      },
+      {
+        name: "Reading view jump fix",
+        desc: "Retry scroll in Reading view after Outline or heading-link jumps (including a split editor + Reading layout). Does not turn headings themselves into links.",
+        control: {
+          type: "toggle",
+          key: "readingViewFix",
+          defaultValue: DEFAULT_SETTINGS.readingViewFix,
         },
       },
       {
@@ -196,6 +207,20 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.linkPaneFix)
           .onChange(async (value) => {
             this.plugin.settings.linkPaneFix = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Reading view jump fix")
+      .setDesc(
+        "Retry scroll in Reading view after Outline or heading-link jumps (including a split editor + Reading layout). Does not turn headings themselves into links."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.readingViewFix)
+          .onChange(async (value) => {
+            this.plugin.settings.readingViewFix = value;
             await this.plugin.saveSettings();
           })
       );
