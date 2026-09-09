@@ -80,6 +80,7 @@ var DEFAULT_SETTINGS = {
   outlineFix: true,
   bodyLinkFix: true,
   linkPaneFix: true,
+  readingViewFix: true,
   retryDelayMs: 250,
   retryCount: 1,
   scrollToCenter: true,
@@ -127,6 +128,15 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
           type: "toggle",
           key: "linkPaneFix",
           defaultValue: DEFAULT_SETTINGS.linkPaneFix
+        }
+      },
+      {
+        name: "Reading view jump fix",
+        desc: "Retry scroll in Reading view after Outline or heading-link jumps (including a split editor + Reading layout). Does not turn headings themselves into links.",
+        control: {
+          type: "toggle",
+          key: "readingViewFix",
+          defaultValue: DEFAULT_SETTINGS.readingViewFix
         }
       },
       {
@@ -218,6 +228,14 @@ var HeadingJumpFixSettingTab = class extends import_obsidian2.PluginSettingTab {
     ).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.linkPaneFix).onChange(async (value) => {
         this.plugin.settings.linkPaneFix = value;
+        await this.plugin.saveSettings();
+      })
+    );
+    new import_obsidian2.Setting(containerEl).setName("Reading view jump fix").setDesc(
+      "Retry scroll in Reading view after Outline or heading-link jumps (including a split editor + Reading layout). Does not turn headings themselves into links."
+    ).addToggle(
+      (toggle) => toggle.setValue(this.plugin.settings.readingViewFix).onChange(async (value) => {
+        this.plugin.settings.readingViewFix = value;
         await this.plugin.saveSettings();
       })
     );
@@ -482,8 +500,200 @@ async function reliableJump(editor, resolved, options) {
   return result;
 }
 
-// src/outline-hook.ts
+// src/view-jump.ts
 var import_obsidian3 = require("obsidian");
+
+// src/preview-target.ts
+function headingOccurrenceIndex(headings, resolved) {
+  const target = resolved.heading;
+  if (!target || !(headings == null ? void 0 : headings.length)) return 0;
+  const normalized = normalizeHeadingText(target.heading);
+  let count = 0;
+  for (const heading of headings) {
+    if (heading.position.start.line === target.position.start.line) return count;
+    if (heading.level === target.level && normalizeHeadingText(heading.heading) === normalized) {
+      count++;
+    }
+  }
+  return count;
+}
+function headingLevelFromTag(el) {
+  const tag = el.tagName.toLowerCase();
+  if (tag.length !== 2 || tag[0] !== "h") return null;
+  const n = parseInt(tag[1], 10);
+  if (n < 1 || n > 6) return null;
+  return n;
+}
+function previewHeadingText(el) {
+  var _a;
+  const data = el.getAttribute("data-heading");
+  if (data) return normalizeHeadingText(data);
+  return normalizeHeadingText((_a = el.textContent) != null ? _a : "");
+}
+function asHTMLElement(node) {
+  if (!node) return null;
+  const withInstance = node;
+  if (typeof withInstance.instanceOf === "function" && withInstance.instanceOf(HTMLElement)) {
+    return node;
+  }
+  const win = node.ownerDocument.defaultView;
+  if (win && node instanceof win.HTMLElement) return node;
+  return null;
+}
+function findPreviewHeadingElement(preview, resolved, occurrenceIndex) {
+  const heading = resolved.heading;
+  if (!heading) return null;
+  const wanted = normalizeHeadingText(heading.heading);
+  const level = heading.level;
+  const matches = [];
+  const nodes = preview.querySelectorAll("h1, h2, h3, h4, h5, h6");
+  for (let i = 0; i < nodes.length; i++) {
+    const el = asHTMLElement(nodes[i]);
+    if (!el) continue;
+    if (headingLevelFromTag(el) !== level) continue;
+    if (previewHeadingText(el) !== wanted) continue;
+    matches.push(el);
+  }
+  if (!matches.length) return null;
+  return matches[Math.min(occurrenceIndex, matches.length - 1)];
+}
+function findPreviewBlockElement(preview, blockId) {
+  const id = blockId.replace(/^\^/, "").trim();
+  if (!id) return null;
+  const tagged = asHTMLElement(
+    preview.querySelector(`[data-block-id=${JSON.stringify(id)}]`)
+  );
+  if (tagged) return tagged;
+  const escaped = typeof CSS !== "undefined" && typeof CSS.escape === "function" ? CSS.escape(id) : null;
+  if (!escaped) return null;
+  return asHTMLElement(preview.querySelector(`#${escaped}`));
+}
+
+// src/view-jump.ts
+function collectMarkdownViews(app, file) {
+  const views = [];
+  app.workspace.iterateAllLeaves((leaf) => {
+    var _a;
+    const view = leaf.view;
+    if (view instanceof import_obsidian3.MarkdownView && ((_a = view.file) == null ? void 0 : _a.path) === file.path) {
+      views.push(view);
+    }
+  });
+  return views;
+}
+function delay2(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+function backoffMs2(baseMs, extraPassIndex) {
+  return baseMs * Math.pow(2, extraPassIndex);
+}
+function previewScrollEl(view) {
+  return asHTMLElement(view.contentEl.querySelector(".markdown-preview-view"));
+}
+function isVisibleIn(el, container) {
+  const box = el.getBoundingClientRect();
+  const frame = container.getBoundingClientRect();
+  const margin = 8;
+  return box.top >= frame.top - margin && box.bottom <= frame.bottom + margin;
+}
+function resolvePreviewTarget(app, file, preview, resolved) {
+  var _a;
+  if (resolved.heading) {
+    const cache = app.metadataCache.getFileCache(file);
+    const occurrence = headingOccurrenceIndex(cache == null ? void 0 : cache.headings, resolved);
+    return findPreviewHeadingElement(preview, resolved, occurrence);
+  }
+  if ((_a = resolved.label) == null ? void 0 : _a.startsWith("^")) {
+    return findPreviewBlockElement(preview, resolved.label);
+  }
+  return null;
+}
+async function reliableJumpReading(app, view, file, resolved, options) {
+  var _a, _b, _c;
+  const log = !!options.debugLog;
+  const center = options.scrollToCenter !== false;
+  if (!resolved) {
+    const result2 = {
+      ok: false,
+      line: -1,
+      retries: 0,
+      reason: "not-found"
+    };
+    debugLog(log, "reading jump failed", result2);
+    return result2;
+  }
+  const preview = previewScrollEl(view);
+  if (!preview) {
+    const result2 = {
+      ok: false,
+      line: resolved.line,
+      retries: 0,
+      reason: "no-editor"
+    };
+    debugLog(log, "reading jump failed", result2);
+    return result2;
+  }
+  const passes = Math.max(1, options.retryCount + 1);
+  let visible = null;
+  for (let i = 0; i < passes; i++) {
+    if (i > 0 && options.retryDelayMs > 0) {
+      await delay2(backoffMs2(options.retryDelayMs, i - 1));
+    }
+    const target = resolvePreviewTarget(app, file, preview, resolved);
+    debugLog(log, "reading scroll pass", {
+      line: resolved.line,
+      heading: (_c = (_b = (_a = resolved.heading) == null ? void 0 : _a.heading) != null ? _b : resolved.label) != null ? _c : "",
+      pass: i + 1,
+      of: passes,
+      found: !!target,
+      center
+    });
+    if (!target) {
+      visible = false;
+      continue;
+    }
+    target.scrollIntoView({
+      block: center ? "center" : "start",
+      behavior: "auto"
+    });
+    await new Promise((resolve) => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => resolve());
+      });
+    });
+    visible = isVisibleIn(target, preview);
+    debugLog(log, "reading viewport check", { line: resolved.line, visible });
+    if (visible === true) break;
+  }
+  const result = {
+    ok: true,
+    line: resolved.line,
+    retries: Math.max(0, passes - 1),
+    visible
+  };
+  debugLog(log, "reading jump result", result);
+  return result;
+}
+async function jumpResolvedInOpenViews(app, file, resolved, settings) {
+  if (!resolved) return;
+  const options = jumpOptionsFromSettings(settings);
+  const views = collectMarkdownViews(app, file);
+  if (views.length === 0) return;
+  for (const view of views) {
+    if (view.getMode() === "preview") {
+      if (settings.readingViewFix) {
+        await reliableJumpReading(app, view, file, resolved, options);
+      }
+      continue;
+    }
+    const editor = view.editor;
+    if (editor) {
+      await reliableJump(editor, resolved, options);
+    }
+  }
+}
+
+// src/outline-hook.ts
 var OUTLINE_SELECTORS = {
   leaf: '.workspace-leaf-content[data-type="outline"]',
   treeItem: ".tree-item",
@@ -559,8 +769,6 @@ var OutlineHook = class {
     );
     const file = this.app.workspace.getActiveFile();
     if (!file) return;
-    const markdownView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
-    if (!(markdownView == null ? void 0 : markdownView.editor)) return;
     this.clearPending();
     debugLog(settings.debugLog, "outline click", {
       headingText,
@@ -576,20 +784,13 @@ var OutlineHook = class {
   }
   async performJump(file, headingText, level, occurrenceIndex) {
     const settings = this.getSettings();
-    const markdownView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
-    const editor = markdownView == null ? void 0 : markdownView.editor;
-    if (!editor) return;
     const resolved = resolveHeading(this.app, {
       file,
       headingText,
       level,
       occurrenceIndex
     });
-    await reliableJump(
-      editor,
-      resolved,
-      jumpOptionsFromSettings(settings)
-    );
+    await jumpResolvedInOpenViews(this.app, file, resolved, settings);
   }
 };
 
@@ -677,11 +878,8 @@ var LinkHook = class {
     const settings = this.getSettings();
     const file = resolveDestFile(this.app, linkpath, sourcePath);
     if (!file) return;
-    const markdownView = findMarkdownView(this.app, file);
-    const editor = markdownView == null ? void 0 : markdownView.editor;
-    if (!editor) return;
     const resolved = jump.kind === "block" ? resolveBlockById(this.app, file, jump.text) : resolveHeadingByText(this.app, file, jump.text);
-    await reliableJump(editor, resolved, jumpOptionsFromSettings(settings));
+    await jumpResolvedInOpenViews(this.app, file, resolved, settings);
   }
 };
 function decodeSubpath(raw) {
@@ -723,19 +921,6 @@ function resolveDestFile(app, linkpath, sourcePath) {
   var _a;
   if (!linkpath) return app.workspace.getActiveFile();
   return (_a = app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath)) != null ? _a : app.workspace.getActiveFile();
-}
-function findMarkdownView(app, file) {
-  var _a, _b;
-  const leaves = app.workspace.getLeavesOfType("markdown");
-  for (const leaf of leaves) {
-    const view = leaf.view;
-    if (view instanceof import_obsidian4.MarkdownView && ((_a = view.file) == null ? void 0 : _a.path) === file.path) {
-      return view;
-    }
-  }
-  const active = app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
-  if (((_b = active == null ? void 0 : active.file) == null ? void 0 : _b.path) === file.path) return active;
-  return active;
 }
 
 // src/storage.ts

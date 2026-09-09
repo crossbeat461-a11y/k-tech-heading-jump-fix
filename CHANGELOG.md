@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.0 — 2026-09-09
+
+### Added
+
+- Reading view: after Outline or heading / block-link jumps, scroll the preview to the target
+- Split layout: correct both the editor pane and the Reading pane when the same note is open
+
+### Notes
+
+- Reading-view heading clicks that are not links stay unchanged (headings are not turned into a table of contents)
+- Remaining work (search, keyboard, unfold) is listed in `ROADMAP.md`
+
 ## 1.1.1 — 2026-08-31
 
 ### Fixed

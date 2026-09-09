@@ -10,7 +10,7 @@
 
 ![Heading Jump Fix screenshot](./images/screenshot.png)
 
-K-Tech Studio plugin that **auto-corrects scroll position** after heading jumps from the Outline, wikilinks, block references, or link panes.
+K-Tech Studio plugin that **auto-corrects scroll position** after heading jumps from the Outline, wikilinks, block references, or link panes — in Live Preview and in Reading view.
 
 ---
 
@@ -20,14 +20,15 @@ K-Tech Studio plugin that **auto-corrects scroll position** after heading jumps 
 
 ### Problem
 
-In Live Preview, clicking a heading in the Outline (or a `[[note#heading]]` link) sometimes moves the cursor but **does not scroll** the editor to show that heading — especially on long notes or right after opening the app. This plugin performs that second correction automatically.
+In Live Preview or Reading view, clicking a heading in the Outline (or a `[[note#heading]]` link) sometimes moves the cursor but **does not scroll** to that heading — especially on long notes, after opening the app, or with a split editor + Reading layout. This plugin performs that second correction automatically.
 
 ### What it fixes
 
-- Outline sidebar: one click should scroll to the heading
+- Outline sidebar: one click should scroll to the heading (Live Preview and Reading view)
 - In-note `[[wikilink#heading]]` clicks
 - In-note `[[note#^block]]` clicks
 - Heading or block clicks in Outgoing links / Backlinks
+- Split layout: editor on one side, Reading view on the other
 - Duplicate headings: disambiguated by order in the outline
 - Theme `scroll-behavior: smooth` missing the target
 - Configurable retry delay, retry count (with backoff), and scroll-to-center
@@ -36,7 +37,7 @@ In Live Preview, clicking a heading in the Outline (or a `[[note#heading]]` link
 
 - General UI sluggishness (Electron/GPU, too many plugins)
 - Dropbox or sync I/O delay
-- Reading view heading clicks that are not links
+- Reading view heading clicks that are not links (headings themselves are not turned into a table of contents)
 
 ### How to use
 
@@ -52,11 +53,11 @@ In Live Preview, clicking a heading in the Outline (or a `[[note#heading]]` link
 | Outline click fix | ON | Retry scroll after outline clicks |
 | Wikilink click fix | ON | Retry scroll after `[[wikilink#heading]]` and `[[note#^block]]` clicks |
 | Link pane click fix | ON | Retry scroll after Outgoing links / Backlinks (headings and blocks) |
+| Reading view jump fix | ON | Retry scroll in Reading view after Outline or heading-link jumps |
 | Retry delay (ms) | 250 | Wait before correction |
 | Retry count | 1 | Extra scroll passes (later passes wait longer) |
 | Scroll heading to center | ON | Center the heading in the editor |
 | Override theme scroll-behavior | ON | Instant editor scroll (ignore theme smooth-scroll) |
-| Debug log | OFF | Jump details in the developer console |
 
 **Command palette:** `Jump to heading at cursor line reliably` — scrolls to the heading that contains the current cursor line.
 
@@ -83,14 +84,15 @@ MIT
 <details open>
 <summary><strong>日本語</strong></summary>
 
-Live Preview でアウトラインや `[[ノート#見出し]]` をクリックしても、カーソルだけ動いて **スクロールが追従しない** ことがあります。2 回目のクリック相当をプラグインが自動で行います。
+Live Preview やリーディングビューで、アウトラインや `[[ノート#見出し]]` をクリックしても、カーソルだけ動いて **スクロールが追従しない** ことがあります。分割表示でも起きやすいです。2 回目のクリック相当をプラグインが自動で行います。
 
 ### 直すもの
 
-- アウトライン 1 クリックでの見出しジャンプ
+- アウトライン 1 クリックでの見出しジャンプ（ライブプレビューとリーディングビュー）
 - 本文の `[[wikilink#見出し]]` クリック
 - 本文の `[[ノート#^ブロック]]` クリック
 - アウトゴーイングリンク / バックリンクの見出し・ブロッククリック
+- 編集とリーディングの左右分割
 - 同名見出し（アウトライン上の順序で区別）
 - テーマのスムーズスクロールで見出しを外す問題
 - リトライ遅延・回数（backoff）・中央揃えの設定
@@ -99,7 +101,7 @@ Live Preview でアウトラインや `[[ノート#見出し]]` をクリック�
 
 - 全体の UI ラグ
 - Dropbox 同期遅延
-- リンクではないリーディングビューの見出しクリック
+- リンクではないリーディングビューの見出しクリック（見出し自体を目次にはしない）
 
 ### 使い方
 
@@ -115,11 +117,11 @@ Live Preview でアウトラインや `[[ノート#見出し]]` をクリック�
 | アウトラインクリック補正 | ON | アウトラインクリック後にスクロールを再試行 |
 | Wikilink クリック補正 | ON | `[[wikilink#見出し]]` と `[[ノート#^ブロック]]` のあとスクロールを再試行 |
 | リンクペイン補正 | ON | アウトゴーイング / バックリンクの見出し・ブロッククリック |
+| リーディングビューのジャンプ補正 | ON | アウトラインや見出しリンクのあと、リーディング側もスクロール |
 | リトライ遅延 (ms) | 250 | 補正までの待ち時間 |
 | リトライ回数 | 1 | 追加のスクロール回数（後の回は待ち時間が増える） |
 | 見出しを中央へ | ON | エディタの中央付近に見出しを置く |
 | テーマの scroll-behavior を上書き | ON | エディタを即時スクロール |
-| デバッグログ | OFF | 開発者コンソールにジャンプ詳細を出す |
 
 **コマンドパレット:** `Jump to heading at cursor line reliably` — カーソル行を含む見出しまでスクロールします。
 

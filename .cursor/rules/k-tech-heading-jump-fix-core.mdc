@@ -10,8 +10,8 @@ globs:
 
 ## スコープ
 
-- Phase 1.0 (stable): outline, wikilink, link pane, viewport verify, theme CSS
-- New features: add to HANDOFF first, do not expand the public README with build steps
+- Phase 6: Reading view landing for outline / heading-link jumps (not non-link heading clicks)
+- Later entries: `ROADMAP.md`. Add there before coding. Do not expand the public README with build steps
 
 ## コーディング
 
