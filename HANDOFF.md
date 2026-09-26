@@ -1,6 +1,6 @@
 # HANDOFF — Heading Jump Fix
 
-<!-- updated: 2026-09-09 -->
+<!-- updated: 2026-09-26 -->
 
 ## Product
 
@@ -10,7 +10,7 @@
 | Name | Heading Jump Fix |
 | Author | K-Tech Studio |
 | Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` |
-| Version | 1.2.1 (stable) |
+| Version | 1.3.0 (stable) |
 
 ## README (community listing)
 
@@ -51,6 +51,7 @@ src/view-jump.ts         Open markdown views (editor + Reading)
 src/preview-target.ts    Heading / block DOM in Reading view
 src/outline-hook.ts      Outline click capture (popout-safe)
 src/link-hook.ts         Wikilink + outgoing/backlink pane clicks
+src/search-hook.ts       Search pane match clicks
 src/theme-scroll.ts      Apply instant-scroll body class (popout-safe)
 src/debug.ts             Debug hook (no console; community review)
 styles.css               Override theme scroll-behavior: smooth (no !important)
@@ -66,7 +67,7 @@ styles.css               Override theme scroll-behavior: smooth (no !important)
 | 4 | 1.0.0 | Stabilize, community listing decision | **Done** |
 | 5 | 1.1.0 | Block reference (`#^`) jump correction | **Done** |
 | 6 | 1.2.0 | Reading view landing (outline / heading links; split panes) | **Done** |
-| 7 | — | Search result jumps | Waiting |
+| 7 | 1.3.0 | Search result jumps | **Done** |
 | 8 | — | Keyboard (follow link; outline confirm) | Waiting |
 | 9 | — | Unfold folded heading after jump | Waiting |
 
@@ -88,6 +89,8 @@ Checklist (manual in Obsidian):
 - [ ] Block-reference click in Outgoing links / Backlinks
 - [ ] `[[note#heading]]` in Reading view
 - [ ] Outline click while the note is in Reading view
+- [ ] Search pane match click on a long note (Live Preview)
+- [ ] Search pane match click while the note is in Reading view
 - [ ] Split: editor + Reading, heading link lands in both
 - [ ] Plugin disabled → no hook
 - [ ] Coexists with TableCSV, Tasks, Dataview

@@ -9,6 +9,7 @@ import { findHeadingAtLine } from "./heading-resolver";
 import { jumpOptionsFromSettings, reliableJump } from "./jump-engine";
 import { OutlineHook } from "./outline-hook";
 import { LinkHook } from "./link-hook";
+import { SearchHook } from "./search-hook";
 import { parseStorage, toStorage } from "./storage";
 import { applyInstantScrollOverride } from "./theme-scroll";
 import { debugLog } from "./debug";
@@ -18,6 +19,7 @@ export default class HeadingJumpFixPlugin extends Plugin {
   private lastSeenVersion?: string;
   private outlineHook: OutlineHook | null = null;
   private linkHook: LinkHook | null = null;
+  private searchHook: SearchHook | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -32,6 +34,8 @@ export default class HeadingJumpFixPlugin extends Plugin {
     this.outlineHook.register(this);
     this.linkHook = new LinkHook(this.app, () => this.settings);
     this.linkHook.register(this);
+    this.searchHook = new SearchHook(this.app, () => this.settings);
+    this.searchHook.register(this);
 
     this.addSettingTab(new HeadingJumpFixSettingTab(this.app, this));
 
@@ -52,6 +56,8 @@ export default class HeadingJumpFixPlugin extends Plugin {
     this.outlineHook = null;
     this.linkHook?.unregister();
     this.linkHook = null;
+    this.searchHook?.unregister();
+    this.searchHook = null;
   }
 
   async loadSettings(): Promise<void> {

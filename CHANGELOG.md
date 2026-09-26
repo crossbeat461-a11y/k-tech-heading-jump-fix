@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0 — 2026-09-26
+
+### Added
+
+- Search pane: after clicking a match, retry scroll so the hit lands on screen (Live Preview and Reading view)
+
+### Notes
+
+- File-title clicks, Omnisearch, and in-note Find (Ctrl/Cmd+F) are unchanged
+- Remaining work (keyboard, unfold) is listed in `ROADMAP.md`
+
 ## 1.2.1 — 2026-09-09
 
 ### Fixed

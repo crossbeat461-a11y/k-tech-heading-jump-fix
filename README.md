@@ -10,7 +10,7 @@
 
 ![Heading Jump Fix screenshot](./images/screenshot.png)
 
-K-Tech Studio plugin that **auto-corrects scroll position** after heading jumps from the Outline, wikilinks, block references, or link panes — in Live Preview and in Reading view.
+K-Tech Studio plugin that **auto-corrects scroll position** after heading jumps from the Outline, Search, wikilinks, block references, or link panes — in Live Preview and in Reading view.
 
 ---
 
@@ -20,11 +20,12 @@ K-Tech Studio plugin that **auto-corrects scroll position** after heading jumps 
 
 ### Problem
 
-In Live Preview or Reading view, clicking a heading in the Outline (or a `[[note#heading]]` link) sometimes moves the cursor but **does not scroll** to that heading — especially on long notes, after opening the app, or with a split editor + Reading layout. This plugin performs that second correction automatically.
+In Live Preview or Reading view, clicking a heading in the Outline, a match in Search, or a `[[note#heading]]` link sometimes moves the cursor but **does not scroll** to that heading — especially on long notes, after opening the app, or with a split editor + Reading layout. This plugin performs that second correction automatically.
 
 ### What it fixes
 
 - Outline sidebar: one click should scroll to the heading (Live Preview and Reading view)
+- Search pane: clicking a match should scroll to that line
 - In-note `[[wikilink#heading]]` clicks
 - In-note `[[note#^block]]` clicks
 - Heading or block clicks in Outgoing links / Backlinks
@@ -43,7 +44,7 @@ In Live Preview or Reading view, clicking a heading in the Outline (or a `[[note
 
 1. Install **Heading Jump Fix** from Community plugins and enable it
 2. Open a long note
-3. Click a heading in **Outline**, a `[[note#heading]]` or `[[note#^block]]` link, or a heading in the link panes
+3. Click a heading in **Outline**, a match in **Search**, a `[[note#heading]]` or `[[note#^block]]` link, or a heading in the link panes
 
 **Settings** (plugin options):
 
@@ -54,6 +55,7 @@ In Live Preview or Reading view, clicking a heading in the Outline (or a `[[note
 | Wikilink click fix | ON | Retry scroll after `[[wikilink#heading]]` and `[[note#^block]]` clicks |
 | Link pane click fix | ON | Retry scroll after Outgoing links / Backlinks (headings and blocks) |
 | Reading view jump fix | ON | Retry scroll in Reading view after Outline or heading-link jumps |
+| Search result jump fix | ON | Retry scroll after Search pane match clicks |
 | Retry delay (ms) | 250 | Wait before correction |
 | Retry count | 1 | Extra scroll passes (later passes wait longer) |
 | Scroll heading to center | ON | Center the heading in the editor |
@@ -84,11 +86,12 @@ MIT
 <details open>
 <summary><strong>日本語</strong></summary>
 
-Live Preview やリーディングビューで、アウトラインや `[[ノート#見出し]]` をクリックしても、カーソルだけ動いて **スクロールが追従しない** ことがあります。分割表示でも起きやすいです。2 回目のクリック相当をプラグインが自動で行います。
+Live Preview やリーディングビューで、アウトライン、検索ヒット、`[[ノート#見出し]]` をクリックしても、カーソルだけ動いて **スクロールが追従しない** ことがあります。分割表示でも起きやすいです。2 回目のクリック相当をプラグインが自動で行います。
 
 ### 直すもの
 
 - アウトライン 1 クリックでの見出しジャンプ（ライブプレビューとリーディングビュー）
+- 検索ペインのヒットクリック
 - 本文の `[[wikilink#見出し]]` クリック
 - 本文の `[[ノート#^ブロック]]` クリック
 - アウトゴーイングリンク / バックリンクの見出し・ブロッククリック
@@ -107,7 +110,7 @@ Live Preview やリーディングビューで、アウトラインや `[[ノー
 
 1. コミュニティプラグインから **Heading Jump Fix** を入れて有効にする
 2. 長いノートを開く
-3. **アウトライン**、`[[ノート#見出し]]` / `[[ノート#^ブロック]]`、またはリンクペインからジャンプする
+3. **アウトライン**、**検索**のヒット、`[[ノート#見出し]]` / `[[ノート#^ブロック]]`、またはリンクペインからジャンプする
 
 **設定**（プラグイン設定）:
 
@@ -118,6 +121,7 @@ Live Preview やリーディングビューで、アウトラインや `[[ノー
 | Wikilink クリック補正 | ON | `[[wikilink#見出し]]` と `[[ノート#^ブロック]]` のあとスクロールを再試行 |
 | リンクペイン補正 | ON | アウトゴーイング / バックリンクの見出し・ブロッククリック |
 | リーディングビューのジャンプ補正 | ON | アウトラインや見出しリンクのあと、リーディング側もスクロール |
+| 検索ヒットのジャンプ補正 | ON | 検索ペインのヒットクリックのあとスクロールを再試行 |
 | リトライ遅延 (ms) | 250 | 補正までの待ち時間 |
 | リトライ回数 | 1 | 追加のスクロール回数（後の回は待ち時間が増える） |
 | 見出しを中央へ | ON | エディタの中央付近に見出しを置く |

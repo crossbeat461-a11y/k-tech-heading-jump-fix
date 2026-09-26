@@ -7,6 +7,7 @@ import { jumpResolvedInOpenViews } from "./view-jump";
 const LINK_PANE_LEAF =
   '.workspace-leaf-content[data-type="outgoing-link"], .workspace-leaf-content[data-type="backlink"]';
 const OUTLINE_LEAF = '.workspace-leaf-content[data-type="outline"]';
+const SEARCH_LEAF = '.workspace-leaf-content[data-type="search"]';
 
 export class LinkHook {
   private handler: ((event: MouseEvent) => void) | null = null;
@@ -69,6 +70,7 @@ export class LinkHook {
     const target = event.target;
     if (!(target instanceof Element)) return;
     if (target.closest(OUTLINE_LEAF)) return;
+    if (target.closest(SEARCH_LEAF)) return;
 
     const inPane = !!target.closest(LINK_PANE_LEAF);
     if (inPane && !settings.linkPaneFix) return;

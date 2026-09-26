@@ -80,6 +80,16 @@ export function findHeadingAtLine(
   return { line: best.position.start.line, heading: best };
 }
 
+/** Exact editor line, plus the heading that contains it (for Reading view). */
+export function resolveAtLine(
+  app: App,
+  file: TFile,
+  line: number
+): ResolvedHeading {
+  const nested = findHeadingAtLine(app, file, line);
+  return { line, heading: nested?.heading };
+}
+
 export function resolveBlockById(
   app: App,
   file: TFile,

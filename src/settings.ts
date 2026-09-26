@@ -13,6 +13,7 @@ export interface HeadingJumpFixSettings {
   bodyLinkFix: boolean;
   linkPaneFix: boolean;
   readingViewFix: boolean;
+  searchFix: boolean;
   retryDelayMs: number;
   retryCount: number;
   scrollToCenter: boolean;
@@ -28,6 +29,7 @@ export const DEFAULT_SETTINGS: HeadingJumpFixSettings = {
   bodyLinkFix: true,
   linkPaneFix: true,
   readingViewFix: true,
+  searchFix: true,
   retryDelayMs: 250,
   retryCount: 1,
   scrollToCenter: true,
@@ -88,6 +90,15 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
           type: "toggle",
           key: "readingViewFix",
           defaultValue: DEFAULT_SETTINGS.readingViewFix,
+        },
+      },
+      {
+        name: "Search result jump fix",
+        desc: "Retry scroll after clicking a match in the Search pane (Live Preview and Reading view).",
+        control: {
+          type: "toggle",
+          key: "searchFix",
+          defaultValue: DEFAULT_SETTINGS.searchFix,
         },
       },
       {
@@ -221,6 +232,20 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.readingViewFix)
           .onChange(async (value) => {
             this.plugin.settings.readingViewFix = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Search result jump fix")
+      .setDesc(
+        "Retry scroll after clicking a match in the Search pane (Live Preview and Reading view)."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.searchFix)
+          .onChange(async (value) => {
+            this.plugin.settings.searchFix = value;
             await this.plugin.saveSettings();
           })
       );
