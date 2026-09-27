@@ -1,3 +1,6 @@
 node_modules/
 .DS_Store
 *.log
+
+# Cursor ops live in K-Tech Communication Network (private)
+.cursor/
