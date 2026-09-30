@@ -67,16 +67,15 @@ export class LinkHook {
   private wrapOpenLinkText(): void {
     if (this.originalOpenLinkText) return;
     const workspace = this.app.workspace;
-    this.originalOpenLinkText = workspace.openLinkText;
-    const original = this.originalOpenLinkText;
+    const original = workspace.openLinkText.bind(workspace);
+    this.originalOpenLinkText = original;
     workspace.openLinkText = (
       linktext: string,
       sourcePath: string,
       newLeaf?: Parameters<Workspace["openLinkText"]>[2],
       openViewState?: Parameters<Workspace["openLinkText"]>[3]
     ) => {
-      const result = original.call(
-        workspace,
+      const result = original(
         linktext,
         sourcePath,
         newLeaf,

@@ -1,7 +1,7 @@
 {
   "id": "k-tech-heading-jump-fix",
   "name": "Heading Jump Fix",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "minAppVersion": "1.8.7",
   "description": "Auto-correct scroll after outline, search, wikilink, heading, and block-reference jumps from click or keyboard, including Reading view.",
   "author": "K-Tech Studio",

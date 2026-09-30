@@ -10,7 +10,7 @@
 | Name | Heading Jump Fix |
 | Author | K-Tech Studio |
 | Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` |
-| Version | 1.4.0 (stable) |
+| Version | 1.4.1 (stable) |
 
 ## README (community listing)
 

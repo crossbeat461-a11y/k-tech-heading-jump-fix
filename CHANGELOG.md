@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1 — 2026-09-30
+
+### Fixed
+
+- Community review: bind `Workspace.openLinkText` before wrapping, so `this` stays on the workspace
+
 ## 1.4.0 — 2026-09-30
 
 ### Added
