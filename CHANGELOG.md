@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.0 — 2026-09-30
+
+### Added
+
+- Outline: retry scroll after confirming a heading with Enter (same path as a click)
+- Wikilink / block reference / link pane: retry scroll after keyboard follow (Enter on the link, Follow link under cursor, or modifier+Enter in the editor)
+
+### Notes
+
+- Search pane keyboard is unchanged (click only, as in 1.3.0)
+- Unfold after jump is still listed in `ROADMAP.md`
+
 ## 1.3.0 — 2026-09-26
 
 ### Added

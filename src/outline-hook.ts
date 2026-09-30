@@ -8,6 +8,11 @@ import {
 } from "./heading-resolver";
 import { debugLog } from "./debug";
 import { jumpResolvedInOpenViews } from "./view-jump";
+import {
+  OUTLINE_KEYBOARD_IGNORE,
+  isConfirmKey,
+  isTypingTarget,
+} from "./keyboard";
 
 export const OUTLINE_SELECTORS = {
   leaf: '.workspace-leaf-content[data-type="outline"]',
@@ -17,7 +22,8 @@ export const OUTLINE_SELECTORS = {
 } as const;
 
 export class OutlineHook {
-  private handler: ((event: MouseEvent) => void) | null = null;
+  private clickHandler: ((event: MouseEvent) => void) | null = null;
+  private keyHandler: ((event: KeyboardEvent) => void) | null = null;
   private pendingTimer: ReturnType<typeof window.setTimeout> | null = null;
   private attached = new Set<Document>();
 
@@ -27,8 +33,13 @@ export class OutlineHook {
   ) {}
 
   register(plugin: Plugin): void {
-    this.handler = (event: MouseEvent) => {
-      void this.onClick(event);
+    this.clickHandler = (event: MouseEvent) => {
+      this.scheduleFromTarget(event.target, "outline click");
+    };
+    this.keyHandler = (event: KeyboardEvent) => {
+      if (!isConfirmKey(event)) return;
+      if (isTypingTarget(event.target)) return;
+      this.scheduleFromTarget(event.target, "outline key");
     };
     this.attach(document);
     plugin.registerEvent(
@@ -47,19 +58,26 @@ export class OutlineHook {
     for (const doc of [...this.attached]) {
       this.detach(doc);
     }
-    this.handler = null;
+    this.clickHandler = null;
+    this.keyHandler = null;
     this.clearPending();
   }
 
   private attach(doc: Document): void {
-    if (!this.handler || this.attached.has(doc)) return;
-    doc.addEventListener("click", this.handler, true);
+    if (!this.clickHandler || !this.keyHandler || this.attached.has(doc)) {
+      return;
+    }
+    doc.addEventListener("click", this.clickHandler, true);
+    doc.addEventListener("keydown", this.keyHandler, true);
     this.attached.add(doc);
   }
 
   private detach(doc: Document): void {
-    if (!this.handler || !this.attached.has(doc)) return;
-    doc.removeEventListener("click", this.handler, true);
+    if (!this.clickHandler || !this.keyHandler || !this.attached.has(doc)) {
+      return;
+    }
+    doc.removeEventListener("click", this.clickHandler, true);
+    doc.removeEventListener("keydown", this.keyHandler, true);
     this.attached.delete(doc);
   }
 
@@ -70,12 +88,16 @@ export class OutlineHook {
     }
   }
 
-  private onClick(event: MouseEvent): void {
+  private scheduleFromTarget(
+    rawTarget: EventTarget | null,
+    logLabel: string
+  ): void {
     const settings = this.getSettings();
     if (!settings.enabled || !settings.outlineFix) return;
 
-    const target = event.target;
+    const target = rawTarget;
     if (!(target instanceof Element)) return;
+    if (target.closest(OUTLINE_KEYBOARD_IGNORE)) return;
 
     const outlineLeaf = target.closest(OUTLINE_SELECTORS.leaf);
     if (!outlineLeaf) return;
@@ -101,7 +123,7 @@ export class OutlineHook {
     if (!file) return;
 
     this.clearPending();
-    debugLog(settings.debugLog, "outline click", {
+    debugLog(settings.debugLog, logLabel, {
       headingText,
       level,
       occurrenceIndex,

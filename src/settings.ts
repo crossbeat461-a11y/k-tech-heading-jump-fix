@@ -58,7 +58,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
       },
       {
         name: "Outline click fix",
-        desc: "Retry scroll after clicking a heading in the Outline sidebar.",
+        desc: "Retry scroll after a heading in the Outline sidebar (click or Enter).",
         control: {
           type: "toggle",
           key: "outlineFix",
@@ -67,7 +67,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
       },
       {
         name: "Wikilink click fix",
-        desc: "Retry scroll after in-note [[wikilink#heading]] and [[note#^block]] clicks.",
+        desc: "Retry scroll after in-note [[wikilink#heading]] and [[note#^block]] jumps (click, Enter on the link, or Follow link under cursor).",
         control: {
           type: "toggle",
           key: "bodyLinkFix",
@@ -76,7 +76,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
       },
       {
         name: "Link pane click fix",
-        desc: "Retry scroll after heading or block-reference clicks in Outgoing links / Backlinks.",
+        desc: "Retry scroll after heading or block-reference jumps in Outgoing links / Backlinks (click or Enter).",
         control: {
           type: "toggle",
           key: "linkPaneFix",
@@ -184,7 +184,9 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Outline click fix")
-      .setDesc("Retry scroll after clicking a heading in the Outline sidebar.")
+      .setDesc(
+        "Retry scroll after a heading in the Outline sidebar (click or Enter)."
+      )
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.outlineFix)
@@ -197,7 +199,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Wikilink click fix")
       .setDesc(
-        "Retry scroll after in-note [[wikilink#heading]] and [[note#^block]] clicks."
+        "Retry scroll after in-note [[wikilink#heading]] and [[note#^block]] jumps (click, Enter on the link, or Follow link under cursor)."
       )
       .addToggle((toggle) =>
         toggle
@@ -211,7 +213,7 @@ export class HeadingJumpFixSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Link pane click fix")
       .setDesc(
-        "Retry scroll after heading or block-reference clicks in Outgoing links / Backlinks."
+        "Retry scroll after heading or block-reference jumps in Outgoing links / Backlinks (click or Enter)."
       )
       .addToggle((toggle) =>
         toggle

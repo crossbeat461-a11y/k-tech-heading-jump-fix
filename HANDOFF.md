@@ -1,6 +1,6 @@
 # HANDOFF — Heading Jump Fix
 
-<!-- updated: 2026-09-26 -->
+<!-- updated: 2026-09-30 -->
 
 ## Product
 
@@ -10,7 +10,7 @@
 | Name | Heading Jump Fix |
 | Author | K-Tech Studio |
 | Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` |
-| Version | 1.3.0 (stable) |
+| Version | 1.4.0 (stable) |
 
 ## README (community listing)
 
@@ -49,9 +49,10 @@ src/heading-resolver.ts  metadataCache → line; outline DOM helpers; block ids
 src/jump-engine.ts       scroll + rAF retry + viewport verify + backoff
 src/view-jump.ts         Open markdown views (editor + Reading)
 src/preview-target.ts    Heading / block DOM in Reading view
-src/outline-hook.ts      Outline click capture (popout-safe)
-src/link-hook.ts         Wikilink + outgoing/backlink pane clicks
+src/outline-hook.ts      Outline click / Enter capture (popout-safe)
+src/link-hook.ts         Wikilink + outgoing/backlink pane; keyboard follow
 src/search-hook.ts       Search pane match clicks
+src/keyboard.ts          Enter confirm helpers
 src/theme-scroll.ts      Apply instant-scroll body class (popout-safe)
 src/debug.ts             Debug hook (no console; community review)
 styles.css               Override theme scroll-behavior: smooth (no !important)
@@ -68,7 +69,7 @@ styles.css               Override theme scroll-behavior: smooth (no !important)
 | 5 | 1.1.0 | Block reference (`#^`) jump correction | **Done** |
 | 6 | 1.2.0 | Reading view landing (outline / heading links; split panes) | **Done** |
 | 7 | 1.3.0 | Search result jumps | **Done** |
-| 8 | — | Keyboard (follow link; outline confirm) | Waiting |
+| 8 | 1.4.0 | Keyboard (follow link; outline confirm) | **Done** |
 | 9 | — | Unfold folded heading after jump | Waiting |
 
 Policy: one remaining entry per release. Details: `ROADMAP.md`.
@@ -89,6 +90,8 @@ Checklist (manual in Obsidian):
 - [ ] Block-reference click in Outgoing links / Backlinks
 - [ ] `[[note#heading]]` in Reading view
 - [ ] Outline click while the note is in Reading view
+- [ ] Outline Enter on a long note (Live Preview)
+- [ ] `[[note#heading]]` via Follow link under cursor (or Alt/Ctrl/Cmd+Enter)
 - [ ] Search pane match click on a long note (Live Preview)
 - [ ] Search pane match click while the note is in Reading view
 - [ ] Split: editor + Reading, heading link lands in both
