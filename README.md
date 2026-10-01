@@ -31,6 +31,7 @@ In Live Preview or Reading view, jumping to a heading from the Outline, Search, 
 - Heading or block jumps in Outgoing links / Backlinks (click or Enter)
 - Split layout: editor on one side, Reading view on the other
 - Duplicate headings: disambiguated by order in the outline
+- Folded headings at the jump target (and ancestor folds that hide them) are opened
 - Theme `scroll-behavior: smooth` missing the target
 - Configurable retry delay, retry count (with backoff), and scroll-to-center
 
@@ -97,6 +98,7 @@ Live Preview やリーディングビューで、アウトライン、検索ヒ�
 - アウトゴーイングリンク / バックリンクの見出し・ブロック（クリックまたは Enter）
 - 編集とリーディングの左右分割
 - 同名見出し（アウトライン上の順序で区別）
+- ジャンプ先の折りたたみ見出し（隠れている親の折りたたみも含む）を開く
 - テーマのスムーズスクロールで見出しを外す問題
 - リトライ遅延・回数（backoff）・中央揃えの設定
 

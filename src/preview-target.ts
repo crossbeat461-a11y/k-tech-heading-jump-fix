@@ -35,7 +35,7 @@ export function previewHeadingText(el: HTMLElement): string {
   return normalizeHeadingText(el.textContent ?? "");
 }
 
-function asHTMLElement(node: Element | null): HTMLElement | null {
+export function asHTMLElement(node: Element | null): HTMLElement | null {
   if (!node) return null;
   const win = node.ownerDocument.defaultView;
   if (win && node.instanceOf(win.HTMLElement)) return node;
@@ -81,5 +81,3 @@ export function findPreviewBlockElement(
   if (!escaped) return null;
   return asHTMLElement(preview.querySelector(`#${escaped}`));
 }
-
-export { asHTMLElement };

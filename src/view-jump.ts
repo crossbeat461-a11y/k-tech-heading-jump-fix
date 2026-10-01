@@ -14,6 +14,7 @@ import {
   type JumpResult,
 } from "./jump-engine";
 import type { HeadingJumpFixSettings } from "./settings";
+import { unfoldJumpInEditor, unfoldJumpInPreview } from "./unfold";
 
 export function collectMarkdownViews(app: App, file: TFile): MarkdownView[] {
   const views: MarkdownView[] = [];
@@ -102,6 +103,7 @@ export async function reliableJumpReading(
     if (i > 0 && options.retryDelayMs > 0) {
       await delay(backoffMs(options.retryDelayMs, i - 1));
     }
+    unfoldJumpInPreview(app, preview, file, resolved, log);
     const target = resolvePreviewTarget(app, file, preview, resolved);
     debugLog(log, "reading scroll pass", {
       line: resolved.line,
@@ -159,6 +161,7 @@ export async function jumpResolvedInOpenViews(
     }
     const editor = view.editor;
     if (editor) {
+      unfoldJumpInEditor(app, editor, file, resolved, options.debugLog === true);
       await reliableJump(editor, resolved, options);
     }
   }

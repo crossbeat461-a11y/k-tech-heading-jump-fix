@@ -1,4 +1,4 @@
-/* Heading Jump Fix 1.4.1
+/* Heading Jump Fix 1.5.0
    Override theme CSS that sets scroll-behavior: smooth.
    Smooth scrolling can leave the heading off-screen after outline jumps.
    No !important — extra type + class selectors beat typical theme rules. */

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.0 — 2026-10-01
+
+### Added
+
+- After a jump, unfold the destination heading if it is folded (and ancestor folds that hide it), in Live Preview and Reading view
+
+### Notes
+
+- Search pane keyboard, Canvas, and Bases are unchanged
+
 ## 1.4.1 — 2026-09-30
 
 ### Fixed

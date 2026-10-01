@@ -7,6 +7,7 @@ import {
 } from "./settings";
 import { findHeadingAtLine } from "./heading-resolver";
 import { jumpOptionsFromSettings, reliableJump } from "./jump-engine";
+import { unfoldJumpInEditor } from "./unfold";
 import { OutlineHook } from "./outline-hook";
 import { LinkHook } from "./link-hook";
 import { SearchHook } from "./search-hook";
@@ -100,6 +101,15 @@ export default class HeadingJumpFixPlugin extends Plugin {
       file: file.path,
       cursorLine: cursor.line,
     });
+    if (resolved) {
+      unfoldJumpInEditor(
+        this.app,
+        editor,
+        file,
+        resolved,
+        this.settings.debugLog
+      );
+    }
     await reliableJump(
       editor,
       resolved,

@@ -1,6 +1,6 @@
 # HANDOFF — Heading Jump Fix
 
-<!-- updated: 2026-09-30 -->
+<!-- updated: 2026-10-01 -->
 
 ## Product
 
@@ -10,7 +10,7 @@
 | Name | Heading Jump Fix |
 | Author | K-Tech Studio |
 | Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` |
-| Version | 1.4.1 (stable) |
+| Version | 1.5.0 (stable) |
 
 ## README (community listing)
 
@@ -53,6 +53,7 @@ src/outline-hook.ts      Outline click / Enter capture (popout-safe)
 src/link-hook.ts         Wikilink + outgoing/backlink pane; keyboard follow
 src/search-hook.ts       Search pane match clicks
 src/keyboard.ts          Enter confirm helpers
+src/unfold.ts            Unfold folded headings (and hiding ancestors) after jump
 src/theme-scroll.ts      Apply instant-scroll body class (popout-safe)
 src/debug.ts             Debug hook (no console; community review)
 styles.css               Override theme scroll-behavior: smooth (no !important)
@@ -70,7 +71,7 @@ styles.css               Override theme scroll-behavior: smooth (no !important)
 | 6 | 1.2.0 | Reading view landing (outline / heading links; split panes) | **Done** |
 | 7 | 1.3.0 | Search result jumps | **Done** |
 | 8 | 1.4.0 | Keyboard (follow link; outline confirm) | **Done** |
-| 9 | — | Unfold folded heading after jump | Waiting |
+| 9 | 1.5.0 | Unfold folded heading after jump | **Done** |
 
 Policy: one remaining entry per release. Details: `ROADMAP.md`.
 Do not make non-link Reading-view headings clickable.
@@ -92,6 +93,9 @@ Checklist (manual in Obsidian):
 - [ ] Outline click while the note is in Reading view
 - [ ] Outline Enter on a long note (Live Preview)
 - [ ] `[[note#heading]]` via Follow link under cursor (or Alt/Ctrl/Cmd+Enter)
+- [ ] Folded heading: jump from Outline opens the fold (Live Preview)
+- [ ] Folded heading: jump from Outline opens the fold (Reading view)
+- [ ] Nested fold: jump to a child heading opens ancestor folds
 - [ ] Search pane match click on a long note (Live Preview)
 - [ ] Search pane match click while the note is in Reading view
 - [ ] Split: editor + Reading, heading link lands in both

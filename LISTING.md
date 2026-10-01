@@ -14,7 +14,7 @@ Paste these values in the developer dashboard.
 ## Short description
 
 ```
-Auto-correct scroll after outline, search, wikilink, heading, and block-reference jumps from click or keyboard, including Reading view, so one action is enough.
+Auto-correct scroll after outline, search, wikilink, heading, and block-reference jumps from click or keyboard, including Reading view. Unfolds folded headings at the jump target.
 ```
 
 The **Overview** tab on the plugin page is the GitHub `README.md` (not this listing block). After changing the README, wait for the directory to refresh, or re-save the listing in the developer dashboard.
@@ -22,9 +22,9 @@ The **Overview** tab on the plugin page is the GitHub `README.md` (not this list
 ## Longer description (if available)
 
 ```
-Heading Jump Fix helps when a heading in the Outline sidebar, a match in Search, a [[wikilink#heading]] in the note, a [[note#^block]] block reference, or a heading in Outgoing links / Backlinks moves the cursor but does not scroll into view — especially on long notes, right after opening the app, or with a split editor + Reading layout.
+Heading Jump Fix helps when a heading in the Outline sidebar, a match in Search, a [[wikilink#heading]] in the note, a [[note#^block]] block reference, or a heading in Outgoing links / Backlinks moves the cursor but does not scroll into view — especially on long notes, after opening the app, or with a split editor + Reading layout.
 
-After each jump, the plugin waits briefly, then scrolls to the heading or block. Outline confirm with Enter and Follow link under cursor use the same correction as a click. In Reading view it scrolls the preview; in Live Preview it scrolls the editor. Duplicate headings are matched by order in the outline. Retry delay, retry count, scroll-to-center, and theme scroll-behavior override are configurable.
+After each jump, the plugin waits, then unfolds a folded target and scrolls to the heading or block. Outline confirm with Enter and Follow link under cursor use the same correction as a click. In Reading view it scrolls the preview; in Live Preview it scrolls the editor. Duplicate headings are matched by order in the outline. Retry delay, retry count, scroll-to-center, and theme scroll-behavior override are configurable.
 
 It does not turn non-link headings in Reading view into a table of contents. Fully offline — no network requests. Does not fix general UI lag or sync delay.
 
