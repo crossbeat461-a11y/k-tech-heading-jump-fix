@@ -1,10 +1,11 @@
-import { Plugin, type App, type TFile } from "obsidian";
+import { MarkdownView, Plugin, type App, type TFile } from "obsidian";
 import type { HeadingJumpFixSettings } from "./settings";
 import {
   countPriorMatchingHeadings,
   getOutlineItemLevel,
   getOutlineItemText,
   resolveHeading,
+  resolveHeadingInSource,
 } from "./heading-resolver";
 import { debugLog } from "./debug";
 import { jumpResolvedInOpenViews } from "./view-jump";
@@ -119,36 +120,49 @@ export class OutlineHook {
       outlineLeaf
     );
 
-    const file = this.app.workspace.getActiveFile();
-    if (!file) return;
+    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!view) return;
+    const file = view.file;
 
     this.clearPending();
     debugLog(settings.debugLog, logLabel, {
       headingText,
       level,
       occurrenceIndex,
-      file: file.path,
+      file: file?.path ?? "(outside vault)",
       delayMs: settings.retryDelayMs,
     });
     this.pendingTimer = window.setTimeout(() => {
       this.pendingTimer = null;
-      void this.performJump(file, headingText, level, occurrenceIndex);
+      void this.performJump(view, file, headingText, level, occurrenceIndex);
     }, settings.retryDelayMs);
   }
 
   private async performJump(
-    file: TFile,
+    view: MarkdownView,
+    file: TFile | null,
     headingText: string,
     level: number,
     occurrenceIndex: number
   ): Promise<void> {
     const settings = this.getSettings();
-    const resolved = resolveHeading(this.app, {
-      file,
-      headingText,
-      level,
-      occurrenceIndex,
-    });
+    const sourceText = markdownSource(view);
+    const resolved = file
+      ? resolveHeading(
+          this.app,
+          { file, headingText, level, occurrenceIndex },
+          sourceText
+        )
+      : resolveHeadingInSource(sourceText, headingText, level, occurrenceIndex);
     await jumpResolvedInOpenViews(this.app, file, resolved, settings);
   }
+}
+
+function markdownSource(view: MarkdownView): string {
+  try {
+    if (view.editor) return view.editor.getValue();
+  } catch {
+    /* Reading view may still expose getViewData */
+  }
+  return view.getViewData();
 }

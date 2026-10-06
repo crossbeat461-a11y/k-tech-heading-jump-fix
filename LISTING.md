@@ -22,11 +22,11 @@ The **Overview** tab on the plugin page is the GitHub `README.md` (not this list
 ## Longer description (if available)
 
 ```
-Heading Jump Fix helps when a heading in the Outline sidebar, a match in Search, a [[wikilink#heading]] in the note, a [[note#^block]] block reference, or a heading in Outgoing links / Backlinks moves the cursor but does not scroll into view — especially on long notes, after opening the app, or with a split editor + Reading layout.
+Heading Jump Fix helps when a heading in the Outline sidebar, a match in Search, a [[wikilink#heading]] in the note, a [[note#^block]] block reference, or a heading in Outgoing links / Backlinks moves the cursor but does not scroll into view — especially on long notes, at startup, in a split layout, or when the file has no vault metadata cache.
 
 After each jump, the plugin waits, then unfolds a folded target and scrolls to the heading or block. Outline confirm with Enter and Follow link under cursor use the same correction as a click. In Reading view it scrolls the preview; in Live Preview it scrolls the editor. Duplicate headings are matched by order in the outline. Retry delay, retry count, scroll-to-center, and theme scroll-behavior override are configurable.
 
-It does not turn non-link headings in Reading view into a table of contents. Fully offline — no network requests. Does not fix general UI lag or sync delay.
+It does not turn non-link headings in Reading view into a table of contents. Fully offline. Does not fix general UI lag.
 
 Support development via Buy Me a Coffee (link in plugin settings and manifest).
 ```

@@ -1,4 +1,7 @@
 import type { App, BlockCache, HeadingCache, TFile } from "obsidian";
+import { headingsFromMarkdown, normalizeHeadingText } from "./heading-from-text";
+
+export { normalizeHeadingText };
 
 export interface JumpTarget {
   file: TFile;
@@ -13,41 +16,76 @@ export interface ResolvedHeading {
   label?: string;
 }
 
-export function normalizeHeadingText(text: string): string {
-  return text.trim().replace(/\s+/g, " ");
+export function headingsForJump(
+  app: App,
+  file: TFile | null,
+  sourceText?: string
+): HeadingCache[] {
+  if (file) {
+    const cached = app.metadataCache.getFileCache(file)?.headings;
+    if (cached?.length) return cached;
+  }
+  if (sourceText != null && sourceText !== "") {
+    return headingsFromMarkdown(sourceText);
+  }
+  return [];
+}
+
+function matchHeading(
+  headings: HeadingCache[],
+  headingText: string,
+  level: number,
+  occurrenceIndex?: number
+): ResolvedHeading | null {
+  if (!headings.length) return null;
+  const normalized = normalizeHeadingText(headingText);
+  const matches = headings.filter(
+    (h) =>
+      h.level === level &&
+      normalizeHeadingText(h.heading) === normalized
+  );
+  if (!matches.length) return null;
+  const occurrence = occurrenceIndex ?? 0;
+  const heading = matches[Math.min(occurrence, matches.length - 1)];
+  return { line: heading.position.start.line, heading };
 }
 
 export function resolveHeading(
   app: App,
-  target: JumpTarget
+  target: JumpTarget,
+  sourceText?: string
 ): ResolvedHeading | null {
-  const cache = app.metadataCache.getFileCache(target.file);
-  const headings = cache?.headings;
-  if (!headings?.length) return null;
-
-  const normalized = normalizeHeadingText(target.headingText);
-  const matches = headings.filter(
-    (h) =>
-      h.level === target.level &&
-      normalizeHeadingText(h.heading) === normalized
+  return matchHeading(
+    headingsForJump(app, target.file, sourceText),
+    target.headingText,
+    target.level,
+    target.occurrenceIndex
   );
+}
 
-  if (!matches.length) return null;
-
-  const occurrence = target.occurrenceIndex ?? 0;
-  const heading = matches[Math.min(occurrence, matches.length - 1)];
-  return { line: heading.position.start.line, heading };
+export function resolveHeadingInSource(
+  sourceText: string,
+  headingText: string,
+  level: number,
+  occurrenceIndex?: number
+): ResolvedHeading | null {
+  return matchHeading(
+    headingsFromMarkdown(sourceText),
+    headingText,
+    level,
+    occurrenceIndex
+  );
 }
 
 export function resolveHeadingByText(
   app: App,
   file: TFile,
   headingText: string,
-  occurrenceIndex = 0
+  occurrenceIndex = 0,
+  sourceText?: string
 ): ResolvedHeading | null {
-  const cache = app.metadataCache.getFileCache(file);
-  const headings = cache?.headings;
-  if (!headings?.length) return null;
+  const headings = headingsForJump(app, file, sourceText);
+  if (!headings.length) return null;
 
   const normalized = normalizeHeadingText(headingText);
   const matches = headings.filter(
@@ -61,12 +99,12 @@ export function resolveHeadingByText(
 
 export function findHeadingAtLine(
   app: App,
-  file: TFile,
-  line: number
+  file: TFile | null,
+  line: number,
+  sourceText?: string
 ): ResolvedHeading | null {
-  const cache = app.metadataCache.getFileCache(file);
-  const headings = cache?.headings;
-  if (!headings?.length) return null;
+  const headings = headingsForJump(app, file, sourceText);
+  if (!headings.length) return null;
 
   let best: HeadingCache | null = null;
   for (const h of headings) {

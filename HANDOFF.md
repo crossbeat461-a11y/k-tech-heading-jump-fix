@@ -10,7 +10,7 @@
 | Name | Heading Jump Fix |
 | Author | K-Tech Studio |
 | Repo | `crossbeat461-a11y/k-tech-heading-jump-fix` |
-| Version | 1.5.0 (stable) |
+| Version | 1.5.1 (stable) |
 
 ## README (community listing)
 
@@ -83,6 +83,7 @@ Fixture: `test/fixtures/long-note.md` — copy into vault manually.
 Checklist (manual in Obsidian):
 
 - [ ] Outline one-click jump on long note
+- [ ] Outline click on Markdown opened outside the vault
 - [ ] First jump after app cold start
 - [ ] Duplicate heading (second "Duplicate name")
 - [ ] `[[note#heading]]` in Live Preview

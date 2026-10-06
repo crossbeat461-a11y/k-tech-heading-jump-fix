@@ -24,7 +24,7 @@ In Live Preview or Reading view, jumping to a heading from the Outline, Search, 
 
 ### What it fixes
 
-- Outline sidebar: click or Enter should scroll to the heading (Live Preview and Reading view)
+- Outline sidebar: click or Enter should scroll to the heading (Live Preview and Reading view), including Markdown opened outside the vault
 - Search pane: clicking a match should scroll to that line
 - In-note `[[wikilink#heading]]` (click, Enter on the link, or Follow link under cursor)
 - In-note `[[note#^block]]` (same as wikilink)
@@ -91,7 +91,7 @@ Live Preview やリーディングビューで、アウトライン、検索ヒ�
 
 ### 直すもの
 
-- アウトラインからの見出しジャンプ（クリックまたは Enter。ライブプレビューとリーディングビュー）
+- アウトラインからの見出しジャンプ（クリックまたは Enter。ライブプレビューとリーディングビュー。Vault 外の Markdown も含む）
 - 検索ペインのヒットクリック
 - 本文の `[[wikilink#見出し]]`（クリック、リンク上の Enter、カーソル位置のリンクをたどる）
 - 本文の `[[ノート#^ブロック]]`（wikilink と同じ）

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.1 — 2026-10-06
+
+### Fixed
+
+- Outline landing when the open Markdown file has no vault metadata cache (files opened from outside the vault). Headings are read from the editor text instead of skipping the jump or using another note
+
+### Notes
+
+- Search pane keyboard, Canvas, and Bases are unchanged
+
 ## 1.5.0 — 2026-10-01
 
 ### Added

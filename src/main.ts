@@ -93,12 +93,17 @@ export default class HeadingJumpFixPlugin extends Plugin {
     editor: import("obsidian").Editor,
     file: import("obsidian").TFile | null
   ): Promise<void> {
-    if (!this.settings.enabled || !file) return;
+    if (!this.settings.enabled) return;
 
     const cursor = editor.getCursor();
-    const resolved = findHeadingAtLine(this.app, file, cursor.line);
+    const resolved = findHeadingAtLine(
+      this.app,
+      file,
+      cursor.line,
+      editor.getValue()
+    );
     debugLog(this.settings.debugLog, "command jump", {
-      file: file.path,
+      file: file?.path ?? "(no vault file)",
       cursorLine: cursor.line,
     });
     if (resolved) {

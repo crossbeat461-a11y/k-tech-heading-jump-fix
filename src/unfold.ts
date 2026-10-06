@@ -1,6 +1,6 @@
 import type { App, Editor, HeadingCache, TFile } from "obsidian";
 import { debugLog } from "./debug";
-import type { ResolvedHeading } from "./heading-resolver";
+import { headingsForJump, type ResolvedHeading } from "./heading-resolver";
 import {
   asHTMLElement,
   findPreviewHeadingElement,
@@ -59,11 +59,11 @@ function unfoldEditorHeading(editor: Editor, headingLine: number): void {
 export function unfoldJumpInEditor(
   app: App,
   editor: Editor,
-  file: TFile,
+  file: TFile | null,
   resolved: ResolvedHeading,
   debug: boolean
 ): void {
-  const headings = app.metadataCache.getFileCache(file)?.headings ?? [];
+  const headings = headingsForJump(app, file, editor.getValue());
   const chain = headingsContainingLine(headings, resolved.line);
   debugLog(debug, "unfold editor", {
     line: resolved.line,
@@ -92,11 +92,12 @@ function unfoldPreviewCollapsed(el: HTMLElement): void {
 export function unfoldJumpInPreview(
   app: App,
   preview: HTMLElement,
-  file: TFile,
+  file: TFile | null,
   resolved: ResolvedHeading,
-  debug: boolean
+  debug: boolean,
+  sourceText?: string
 ): void {
-  const headings = app.metadataCache.getFileCache(file)?.headings ?? [];
+  const headings = headingsForJump(app, file, sourceText);
   const chain = headingsContainingLine(headings, resolved.line);
   debugLog(debug, "unfold preview", {
     line: resolved.line,

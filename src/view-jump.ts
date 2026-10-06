@@ -1,6 +1,6 @@
 import { MarkdownView, type App, type TFile } from "obsidian";
 import { debugLog } from "./debug";
-import type { ResolvedHeading } from "./heading-resolver";
+import { headingsForJump, type ResolvedHeading } from "./heading-resolver";
 import {
   asHTMLElement,
   findPreviewBlockElement,
@@ -16,7 +16,11 @@ import {
 import type { HeadingJumpFixSettings } from "./settings";
 import { unfoldJumpInEditor, unfoldJumpInPreview } from "./unfold";
 
-export function collectMarkdownViews(app: App, file: TFile): MarkdownView[] {
+export function collectMarkdownViews(app: App, file: TFile | null): MarkdownView[] {
+  if (!file) {
+    const active = app.workspace.getActiveViewOfType(MarkdownView);
+    return active ? [active] : [];
+  }
   const views: MarkdownView[] = [];
   app.workspace.iterateAllLeaves((leaf) => {
     const view = leaf.view;
@@ -48,13 +52,14 @@ function isVisibleIn(el: HTMLElement, container: HTMLElement): boolean {
 
 function resolvePreviewTarget(
   app: App,
-  file: TFile,
+  file: TFile | null,
   preview: HTMLElement,
-  resolved: ResolvedHeading
+  resolved: ResolvedHeading,
+  sourceText?: string
 ): HTMLElement | null {
   if (resolved.heading) {
-    const cache = app.metadataCache.getFileCache(file);
-    const occurrence = headingOccurrenceIndex(cache?.headings, resolved);
+    const headings = headingsForJump(app, file, sourceText);
+    const occurrence = headingOccurrenceIndex(headings, resolved);
     return findPreviewHeadingElement(preview, resolved, occurrence);
   }
   if (resolved.label?.startsWith("^")) {
@@ -66,7 +71,7 @@ function resolvePreviewTarget(
 export async function reliableJumpReading(
   app: App,
   view: MarkdownView,
-  file: TFile,
+  file: TFile | null,
   resolved: ResolvedHeading | null,
   options: JumpOptions
 ): Promise<JumpResult> {
@@ -103,8 +108,9 @@ export async function reliableJumpReading(
     if (i > 0 && options.retryDelayMs > 0) {
       await delay(backoffMs(options.retryDelayMs, i - 1));
     }
-    unfoldJumpInPreview(app, preview, file, resolved, log);
-    const target = resolvePreviewTarget(app, file, preview, resolved);
+    const sourceText = view.getViewData();
+    unfoldJumpInPreview(app, preview, file, resolved, log, sourceText);
+    const target = resolvePreviewTarget(app, file, preview, resolved, sourceText);
     debugLog(log, "reading scroll pass", {
       line: resolved.line,
       heading: resolved.heading?.heading ?? resolved.label ?? "",
@@ -143,7 +149,7 @@ export async function reliableJumpReading(
 
 export async function jumpResolvedInOpenViews(
   app: App,
-  file: TFile,
+  file: TFile | null,
   resolved: ResolvedHeading | null,
   settings: HeadingJumpFixSettings
 ): Promise<void> {
