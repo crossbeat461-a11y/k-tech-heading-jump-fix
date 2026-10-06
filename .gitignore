@@ -1,6 +1,13 @@
 node_modules/
 .DS_Store
+**/.DS_Store
+Thumbs.db
+Desktop.ini
+.vercel
 *.log
+
+# Cursor ops live in K-Tech Communication Network (private)
+.cursor/
 
 # Cursor ops live in K-Tech Communication Network (private)
 .cursor/
